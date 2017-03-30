@@ -59,22 +59,18 @@
         });
     }
 
-    function styledefaultStyle () {
-        return {
-            fillColor: "red", //backgroundColor
-            color: "red", // lineColor 
-            opacity: "90%", //backgroundOpacity 
-            weight: "1px" //lineWidth
-        }
+    function styledefaultStyle() {
+        var style = {};
+        style["color"] = "red";
+        style["opacity"] = "90%";
+        style["weight"] = "1px";
+        return style;
     }
 
     function stylecoolStyle() {
         var style = styledefaultStyle();
-        if (style.hasOwnProperty("fillColor")) {
-            style.fillColor = "blue";
-        } else {
-            style["fillColor"] = "blue";
-        }
+        style["fillColor"] = "blue";
+        style["pointerIcon"] = geticonTemputur();
         return style;
     }
 </script>

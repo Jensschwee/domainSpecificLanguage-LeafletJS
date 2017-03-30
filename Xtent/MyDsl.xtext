@@ -1,0 +1,225 @@
+grammar org.example.domainmodel.Domainmodel with org.eclipse.xtext.common.Terminals
+ 
+generate domainmodel "http://www.example.org/domainmodel/Domainmodel"
+ 
+Model:
+    leafletVersion=LeafletVersion? includes+=Include* maps+=Map+ modelItems+=ModelItems*   
+;
+
+ModelItems:
+	Icon | Styling| Layer| Button | Transform | DataSource
+;
+
+LeafletVersion:
+	'leaflet' version=LeafletSupportedVersions
+;
+
+LeafletSupportedVersions:
+	{VERSION103} '1.0.3'
+;
+
+Button:
+	'button' ToggleButton 
+;
+
+ToggleButton:
+	'toggles' layer=[Layer] icon=[Icon] 'location' location=ScreenLocation
+;
+
+ScreenLocation:
+	{TOPRIGHT} 'topRight' | {TOPLEFT}'topLeft' | {BOTTOMLEFT}'bottomLeft' | {BOTTOMRIGHT}'bottomRight'
+;
+
+Styling:
+	'style' name=ID (':' base=[Styling])? '{' styles+=CSSStyle+ '}'
+;
+
+CSSStyle:
+	lineColor?=LineColor | lineWidth?=LineWidth | backgroundColor?=BackgroundColor | backgroundOpacity?=BackgroundOpacity | pointerIcon?= PointerIcon
+;
+
+PointerIcon:
+	'pointerIcon' icon=[Icon]
+;
+
+Icon:
+	'icon' name=ID source=STRING 'size' size=INT
+;
+
+BackgroundOpacity:
+	'backgroundOpacity' value=INT '%'
+;
+
+BackgroundColor:
+	'backgroundColor' color=BackgroundColorTypes
+;
+
+BackgroundColorTypes:
+	ID | HEXCOLOR
+;
+
+LineWidth:
+	'lineWidth' value=INT
+;
+
+LineColor:
+	'lineColor' value=ID | hex=HEXCOLOR
+;
+
+Transform:
+	'transform' name=ID variable=ID expression=MathTermAdv
+;
+
+Layer:
+	'layer' name=ID 'from' map=[DataSource] '{' filter+=Filter (filter+=Filter)*'}'
+;
+
+Filter:
+	'filter' (style=[Styling])? ('type' mapType=MapType)? 'where' expression=Disjunction
+;
+
+MapType:
+	{POINT}'point' | {POLYGON}'polygon'
+;
+
+MathTermAdv returns MathExp:
+	MathTermSimple ({MathOp.left=current} op=OperatorAddMinus right=MathTermAdv)?
+;
+
+MathTermSimple returns MathExp:
+	MathFactor ({MathOp.left=current} op=OperatorMultiDiv right=MathTermSimple)?
+;
+
+MathFactor  returns MathExp:
+	Term| {value}'value' | '('MathTermAdv')'
+;
+
+OperatorAddMinus:
+	{MINUS} '-'| {PLUS} '+'
+;
+
+OperatorMultiDiv:
+	{MULTIPLI} '*'| {DIVISION} '/'
+;
+
+Term:
+	NumberTypes | transform=[Transform]
+;
+
+Disjunction returns LogicExpression:
+	Conjunction ({LogicExp.left=current} op='or' right=Disjunction)?
+;
+
+Conjunction returns LogicExpression:
+	LogicTerm  ({LogicExp.left=current} op='and' right=Conjunction)?
+;
+
+LogicTerm returns LogicExpression:
+	Comparison | '(' Disjunction ')'
+;
+
+Comparison:
+	left=AllTypes oparator=LogicOparator right=AllTypes
+;
+
+LogicOparator:
+	{LESS} '<' | {MORE}'>' | {EQ}'=' | {EQLESS}'=<' | {EQMORE}'=>' | {EQLESS}'<=' | {EQMORE}'>=' | {NOT}'!=' | {NOT}'<>'| {NOT}'=!'
+;
+
+DataSource:
+	'source' sourceType=SourceType name=ID sourceLocation=STRING '{' variables+=DataSourceVariable+ '}'
+;
+
+DataSourceVariable:
+	'variable' vname=ID
+;
+
+SourceType:
+	{JSON}'json'
+;
+
+Include:
+	'include' Script | 'include' Style
+;
+
+Style:
+	'style' source=STRING
+;
+
+Script:
+	'script' source=STRING
+;
+
+Map:
+	'map' mapName=ID (optinals+=MapOptions)* location=GeoLocation mapSource=STRING
+;
+
+GeoLocation:
+	'lat' lat=DOUBLE  'long' long=DOUBLE
+;
+
+MapOptions:
+	StartZoom | MinZoom | MaxZoom | MaxNativeZoom | DisableZoomBtn | ApiKey | Attribution | KeyValue
+;
+
+KeyValue:
+	key=ID value=STRING
+;
+
+DisableZoomBtn:
+	'disableZoomBtn' inactive=BOOLEAN
+;
+
+MaxNativeZoom:
+	'maxNativeZoom' zoom=INT
+;
+
+MaxZoom:
+	'maxZoom' zoom=INT
+;
+
+MinZoom:
+	'minZoom' zoom=INT
+;
+
+StartZoom:
+	'startZoom' zoom=INT
+;
+
+ApiKey:
+	'apikey' apikey=STRING
+;
+
+Attribution:
+	'attribution' attribution=STRING
+;
+
+
+
+
+AllTypes:
+	NumberTypes |string=STRING | BOOLEAN | string=ID
+;
+
+NumberTypes:
+	int=INTEGER |double=DOUBLE
+;
+
+INTEGER:
+	(neq?=('-'))? value=INT
+;
+
+DOUBLE:
+    value=INTEGER '.' decimals=INT;
+
+BOOLEAN:
+	 {TRUE}'true' | {FALSE}'false'
+;
+
+terminal HEXCOLOR:
+	'#' HEXCHAR HEXCHAR HEXCHAR HEXCHAR HEXCHAR HEXCHAR
+;
+
+terminal HEXCHAR:
+	('a'..'f'|'A'..'F'|'0'..'9')
+;

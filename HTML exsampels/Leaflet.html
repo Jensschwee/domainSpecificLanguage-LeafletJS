@@ -17,6 +17,7 @@
             height: 100%;
             margin: 0;
         }
+
         #map {
             min-height: 100%;
         }
@@ -43,6 +44,39 @@
     }).addTo(WorldMap);
 
 
+
+    function geticonTemputur () {
+        L.icon({
+            iconUrl: 'jdsgj',
+            iconSize: [5, 5]
+        });
+    }
+
+    function geticonTemputur2() {
+        L.icon({
+            iconUrl: 'jdsgj',
+            iconSize: [7, 7]
+        });
+    }
+
+    function styledefaultStyle () {
+        return {
+            fillColor: "red", //backgroundColor
+            color: "red", // lineColor 
+            opacity: "90%", //backgroundOpacity 
+            weight: "1px" //lineWidth
+        }
+    }
+
+    function stylecoolStyle() {
+        var style = styledefaultStyle();
+        if (style.hasOwnProperty("fillColor")) {
+            style.fillColor = "blue";
+        } else {
+            style["fillColor"] = "blue";
+        }
+        return style;
+    }
 </script>
 
 </html>

@@ -8,7 +8,6 @@ import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
 import org.example.domainmodel.domainmodel.Include
-import java.util.Map
 import org.eclipse.emf.common.util.EList
 import org.example.domainmodel.domainmodel.Script
 import org.example.domainmodel.domainmodel.Style
@@ -36,6 +35,10 @@ import org.example.domainmodel.domainmodel.Layer
 import org.example.domainmodel.domainmodel.Button
 import org.example.domainmodel.domainmodel.Transform
 import org.example.domainmodel.domainmodel.DataSource
+import org.example.domainmodel.domainmodel.DOUBLE
+import org.example.domainmodel.domainmodel.INTEGER
+import org.example.domainmodel.domainmodel.TRUE
+import org.example.domainmodel.domainmodel.FALSE
 
 /**
  * Generates code from your model files on save.
@@ -49,15 +52,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 		fsa.generateFile("/Leaflet.html",generateLeafletHTML(model));
 	}
 	
-	def generateLeafletHTML(Model model){
-		
-		generateStaticHeader();
-		generateInclude(model.includes);
-		generateStaticHTMLBODY();
-		generateMaps(model.map);
-		generateModelItem(model.modelItems);
-		generateStatickFooter();
-	}
+	def generateLeafletHTML(Model model)'''
+		«generateStaticHeader()»
+		«generateInclude(model.includes)»
+		«generateStaticHTMLBODY()»
+		«generateMaps(model.map)»
+		«generateModelItem(model.modelItems)»
+		«generateStatickFooter()»
+	'''
 	
 	def generateModelItem(EList<ModelItems> modelItems)'''
 	«FOR mi : modelItems»
@@ -133,7 +135,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	var «map.mapName» = L.map('map',
 		        {
 		        	«generateMapContainterOptions(map.optinals.filter(typeof(MapContainterOptions)).toList())»
-		        }).setView([«map.location.lat», «map.location.long»], «generateMapOptinalStartZoom(map)»);
+		        }).setView([«printDOUBLE(map.location.lat)», «printDOUBLE(map.location.long)»], «generateMapOptinalStartZoom(map)»);
 	
 	 L.tileLayer('«map.mapSource»', {
  			«generateMapTilelayerOptions(map.optinals.filter(typeof(MapTilelayerOptions)).toList())»
@@ -145,6 +147,31 @@ class DomainmodelGenerator extends AbstractGenerator {
 			«generateMapTilelayerOptionsMember(m)»
 		«ENDFOR»
 	'''
+	
+	def printDOUBLE(DOUBLE value)'''
+	«IF(value.value.neq)»
+	-«value.value.value».«value.decimals»
+	«ELSE»
+	«value.value.value».«value.decimals»
+	«ENDIF»
+	'''
+	
+	def printINTEGER(INTEGER value)'''
+	«IF(value.neq)»
+	-«value.value»
+	«ELSE»
+	«value.value»
+	«ENDIF»
+	'''
+	
+	def dispatch printBOOLEAN(TRUE value)'''
+	true
+	'''
+	
+	def dispatch printBOOLEAN(FALSE value)'''
+	false
+	'''
+	
 	
 	def dispatch generateMapTilelayerOptionsMember(MinZoom s)'''
 		minZoom : «s.zoom»
@@ -177,27 +204,27 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''
 	
 	def dispatch generateMapContainterOptionsMember(ScrollWheelZoom s)'''
-		scrollWheelZoom : «s.inactive»
+		scrollWheelZoom : «printBOOLEAN(s.inactive)»
 	'''
 	
 	def dispatch generateMapContainterOptionsMember(DoubleClickZoom s)'''
-		doubleClickZoom : «s.inactive»
+		doubleClickZoom : «printBOOLEAN(s.inactive)»
 	'''
 	
 	def dispatch generateMapContainterOptionsMember(DisableZoomBtn s)'''
-		zoomControl : «s.inactive»
+		zoomControl : «printBOOLEAN(s.inactive)»
 	'''
 	
 	def dispatch generateMapContainterOptionsMember(KeyboardDisable s)'''
-		keyboard : «s.inactive»
+		keyboard : «printBOOLEAN(s.inactive)»
 	'''
 	
 	def dispatch generateMapContainterOptionsMember(TouchZoomDisable s)'''
-		touchZoom : «s.inactive»
+		touchZoom : «printBOOLEAN(s.inactive)»
 	'''
 	
 	def dispatch generateMapContainterOptionsMember(DraggingDisable s)'''
-		draggable :  «s.inactive»
+		draggable :  «printBOOLEAN(s.inactive)»
 	'''
 	
 	def generateMapOptinalStartZoom(org.example.domainmodel.domainmodel.Map map)'''
@@ -206,31 +233,26 @@ class DomainmodelGenerator extends AbstractGenerator {
 		«startZoom.get(0).zoom»
 		«ENDIF»
 	'''
-	
-	def generateMapOptinal(org.example.domainmodel.domainmodel.Map map)
-	{
-		
-	}
 		
 	def generateStaticHeader()'''
 		<!DOCTYPE html>
-				<html xmlns="http://www.w3.org/1999/xhtml">
-				<head>
-					<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
-				    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
-					<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-					<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-				    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
-					<title>Leaflet DSL</title>
-				    <style type="text/css">
-				        html, body {
-				            height: 100%;
-				            margin: 0;
-				        }
-				        #map {
-				            min-height: 100%;
-				        }
-					</style>
+		<html xmlns="http://www.w3.org/1999/xhtml">
+		<head>
+			<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+		    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+			<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+		    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
+			<title>Leaflet DSL</title>
+		    <style type="text/css">
+		        html, body {
+		            height: 100%;
+		            margin: 0;
+		        }
+		        #map {
+		            min-height: 100%;
+		        }
+			</style>
 	'''
 	
 	def generateInclude(List<Include> includes) '''

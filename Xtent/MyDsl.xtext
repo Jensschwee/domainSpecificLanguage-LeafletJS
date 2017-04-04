@@ -3,7 +3,7 @@ grammar org.example.domainmodel.Domainmodel with org.eclipse.xtext.common.Termin
 generate domainmodel "http://www.example.org/domainmodel/Domainmodel"
  
 Model:
-    leafletVersion=LeafletVersion? includes+=Include* maps+=Map+ modelItems+=ModelItems*   
+    leafletVersion=LeafletVersion? includes+=Include* map=Map modelItems+=ModelItems*   
 ;
 
 ModelItems:
@@ -43,7 +43,7 @@ PointerIcon:
 ;
 
 Icon:
-	'icon' name=ID source=STRING 'size' size=INT
+	'icon' name=ID 'size' size=INT 'source' source=STRING 
 ;
 
 BackgroundOpacity:
@@ -159,16 +159,46 @@ GeoLocation:
 ;
 
 MapOptions:
-	StartZoom | MinZoom | MaxZoom | MaxNativeZoom | DisableZoomBtn | ApiKey | Attribution | KeyValue
+	MapContainterOptions | MapTilelayerOptions  | StartZoom
 ;
+
+MapContainterOptions:
+	ScrollWheelZoom | DoubleClickZoom| KeyboardDisable| DisableZoomBtn | TouchZoomDisable | DraggingDisable 
+;
+
+MapTilelayerOptions:
+	MinZoom | MaxZoom | MaxNativeZoom | ApiKey | Attribution | KeyValue
+;
+
+ScrollWheelZoom:
+	'scrollWheelZoom' inactive=BOOLEAN
+;
+
+DoubleClickZoom:
+	'doubleClickZoom' inactive=BOOLEAN
+;
+
 
 KeyValue:
 	key=ID value=STRING
 ;
 
+KeyboardDisable:
+	'keyboardDisable' inactive=BOOLEAN
+;
+
 DisableZoomBtn:
 	'disableZoomBtn' inactive=BOOLEAN
 ;
+
+DraggingDisable:
+	'draggingDisable' inactive=BOOLEAN
+;
+
+TouchZoomDisable:
+	'touchZoom' inactive=BOOLEAN
+;
+
 
 MaxNativeZoom:
 	'maxNativeZoom' zoom=INT

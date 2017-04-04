@@ -1,19 +1,13 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <!--CSS-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+	<!-- Statisk -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
-
-    <!--JS-->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-    <title>Leaflet DSL</title>
+	<title>Leaflet DSL</title>
     <!-- Default style -->
     <style type="text/css">
         html, body {
@@ -24,16 +18,21 @@
         #map {
             min-height: 100%;
         }
-    </style>
-</head>
+	</style>
+	
+    <!--CSS-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 
+    <!--JS-->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"/>
+<!-- statisk HTML -->
+</head>
 <body>
     <div id="map">
     </div>
 </body>
-
 <script>
-
+	<!-- statisk JS -->
     function CallURL(url, data) {
         $.ajax({
             url: url,
@@ -41,7 +40,6 @@
             dataType: "jsonp",
             async: false,
             success: function (msg) {
-                console.log(msg);
                 JsonpCallback(JSON.parse(msg), data);
             },
             error: function () {
@@ -53,12 +51,22 @@
     function JsonpCallback(json, data) {
         data = json.result;
     }
-
+	
+	<!-- map -->
     var WorldMap = L.map('map',
         {
             zoomControl: false
         }).setView([55.4, 10.3], 12);
-
+		
+	L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        minZoom: 0,
+        maxZoom: 19,
+        maxNativeZoom: 22,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Map data &copy; Google maps</a>'
+    }).addTo(WorldMap);
+	
+	<!-- soruce -->
     var OU44_1 = null;
 
     CallURL("http://10.123.3.12/uploads/ble-maps/beacons.json", OU44_1);
@@ -66,16 +74,8 @@
     var OU44 = null;
 
     CallURL("http://10.123.3.12/uploads/ble-maps/beacons.json", OU44);
-    
-
-    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        minZoom: 0,
-        maxZoom: 19,
-        maxNativeZoom: 22,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-        attribution: 'Map data &copy; Google maps</a>'
-    }).addTo(WorldMap);
-
+	
+	<!-- transform -->
     function transformCelciusToFahrenheit(value) {
         return value * 9 / 5 + 9 / 5 * 32;
     }
@@ -84,30 +84,58 @@
         return transformCelciusToFahrenheit(value) * value + 1 / 5 + 32 + 3 + 34 * 2;
     }
 
+	<!-- icon -->
     function geticonTemputur() {
-        L.icon({
+        return L.icon({
             iconUrl: 'jdsgj',
             iconSize: [5, 5]
         });
     }
-
+	
+    function geticonTemputur2() {
+        return L.icon({
+            iconUrl: 'jdsgj',
+            iconSize: [7, 7]
+        });
+    }
+	
+	<!-- style -->
+    function styledefaultStyle() {
+        var style = {};
+        style["color"] = "red";
+        style["opacity"] = "90%";
+        style["weight"] = "1px";
+        return style;
+	}
+    
+	function stylecoolStyle() {
+        var style = styledefaultStyle();
+        style["fillColor"] = "blue";
+        style["pointerIcon"] = geticonTemputur();
+        return style;
+    }
+	
+	<!-- layer -->
     var layerfahrenheitLayer = L.geoJson(OU44_1, { filter: layerfahrenheitLayerFilter1, style: stylecoolStyle });
     layerfahrenheitLayer.addTo(WorldMap);
-
+	
+	<!-- filter -->
     function layerfahrenheitLayerFilter1(feature) {
-        if (feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
+        if (!feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
             return false;
         if (transformCelciusToFahrenheit(feature.properties.Temperature) > 50 && feature.properties.Motion !== 0)
             return true;
         return false;
     }
-
-    //var layercelciusLayer = L.geoJson(OU44, { filter: celciusLayerFilter1, style : styledefaultStyle});
-    //L.geoJson(OU44, { filter: celciusLayerFilter2, style: stylecoolStyle}).addTo(layercelciusLayer);
-    //layercelciusLayer.addTo(WorldMap);
-
+	
+	<!-- layer -->
+    var layercelciusLayer = L.geoJson(OU44, { filter: celciusLayerFilter1, style : styledefaultStyle});
+    L.geoJson(OU44, { filter: celciusLayerFilter2, style: stylecoolStyle}).addTo(layercelciusLayer);
+    layercelciusLayer.addTo(WorldMap);
+	
+	<!-- filter -->
     function celciusLayerFilter1(feature) {
-        if (feature.properties.hasOwnProperty("Temperature") || feature.properties.hasOwnProperty("Motion") || feature.properties.hasOwnProperty("CO2"))
+        if (!feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
             return false;
         if (feature.geometry.type !== "Polygon")
             return false;
@@ -117,11 +145,12 @@
             return true;
         return false;
     }
-
+	
+	<!-- filter -->
     function celciusLayerFilter2(feature) {
         console.log(feature.properties);
         if (!feature.properties.hasAttribute("Temperature"))
-            console.log("jdsg");
+            return false;
         if (feature.geometry.type !== "Point")
             return false;
         if (feature.properties.Temperature < 250 && feature.properties.CO2 === 50)
@@ -130,31 +159,11 @@
             return true;
         return false;
     }
-
-    function geticonTemputur2() {
-        L.icon({
-            iconUrl: 'jdsgj',
-            iconSize: [7, 7]
-        });
-    }
-
-    function styledefaultStyle() {
-        var style = {};
-        style["color"] = "red";
-        style["opacity"] = "90%";
-        style["weight"] = "1px";
-        return style;
-    }
-
-    function stylecoolStyle() {
-        var style = styledefaultStyle();
-        style["fillColor"] = "blue";
-        style["pointerIcon"] = geticonTemputur();
-        return style;
-    }
-
-    var tooglecelciusLayer=  L.easyButton({
+	
+	<!-- toogleBTN -->
+    var tooglecelciusLayer =  L.easyButton({
         id: 'easy-button',
+		position: 'topright',
         states: [{
             icon: geticonTemputur(),
             stateName: 'toggled',
@@ -175,11 +184,11 @@
                 WorldMap.addLayer(layercelciusLayer);
             }
         }
-        ],
-        position: 'topright'
+        ]
     }).addTo(WorldMap);
     tooglecelciusLayer.button.style.backgroundColor = 'grey';
-
+	
+	<!-- toogleBTN -->
     var tooglecelciusLayer  = L.easyButton({
         id: 'easy-button',
         position: 'bottomright',

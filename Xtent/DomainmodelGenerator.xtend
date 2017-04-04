@@ -29,6 +29,13 @@ import org.example.domainmodel.domainmodel.MaxNativeZoom
 import org.example.domainmodel.domainmodel.ApiKey
 import org.example.domainmodel.domainmodel.Attribution
 import org.example.domainmodel.domainmodel.KeyValue
+import org.example.domainmodel.domainmodel.ModelItems
+import org.example.domainmodel.domainmodel.Icon
+import org.example.domainmodel.domainmodel.Styling
+import org.example.domainmodel.domainmodel.Layer
+import org.example.domainmodel.domainmodel.Button
+import org.example.domainmodel.domainmodel.Transform
+import org.example.domainmodel.domainmodel.DataSource
 
 /**
  * Generates code from your model files on save.
@@ -48,8 +55,40 @@ class DomainmodelGenerator extends AbstractGenerator {
 		generateInclude(model.includes);
 		generateStaticHTMLBODY();
 		generateMaps(model.map);
+		generateModelItem(model.modelItems);
 		generateStatickFooter();
 	}
+	
+	def generateModelItem(EList<ModelItems> modelItems)'''
+	«FOR mi : modelItems»
+		«generateModelItemMember(mi)»
+	«ENDFOR»
+	'''
+	
+	def dispatch generateModelItemMember(Icon icon) '''
+	
+	'''
+	
+	def dispatch generateModelItemMember(Styling style) '''
+	
+	'''
+	
+	def dispatch generateModelItemMember(Layer layer) '''
+	
+	'''
+	
+	def dispatch generateModelItemMember(Button button) '''
+	
+	'''
+	
+	def dispatch generateModelItemMember(Transform transform) '''
+	
+	'''
+	
+	def dispatch generateModelItemMember(DataSource dataSoruce) '''
+	
+	'''
+	
 	
 	def generateStaticHTMLBODY() '''
 	</head>

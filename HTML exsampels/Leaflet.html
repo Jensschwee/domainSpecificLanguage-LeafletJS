@@ -64,7 +64,6 @@
     loadJSON("https://www.mapbox.com/help/data/stations.geojson",
         (function (data) {
             OU44 = JSON.parse(data);
-            console.log(OU44);
         }));
 
     L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -115,7 +114,7 @@
     layerfahrenheitLayer.addTo(WorldMap);
 
     function layerfahrenheitLayerFilter1(feature) {
-        if (!feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
+        if (feature == undefined || !feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
             return false;
         if (transformCelciusToFahrenheit(feature.properties.Temperature) > 50 && feature.properties.Motion !== 0)
             return true;
@@ -127,7 +126,7 @@
     layercelciusLayer.addTo(WorldMap);
 
     function celciusLayerFilter1(feature) {
-        if (!feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
+        if (feature == undefined || !feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
             return false;
         if (feature.geometry.type !== "Polygon")
             return false;
@@ -139,8 +138,7 @@
     }
 
     function celciusLayerFilter2(feature) {
-        console.log(feature.properties);
-        if (!feature.properties.hasAttribute("Temperature"))
+        if (feature == undefined || !feature.properties.hasAttribute("Temperature") || !feature.properties.hasAttribute("CO2"))
             return false;
         if (feature.geometry.type !== "Point")
             return false;

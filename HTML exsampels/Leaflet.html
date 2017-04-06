@@ -19,7 +19,7 @@
             min-height: 100%;
         }
 	</style>
-	
+
     <!--CSS-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
 
@@ -51,13 +51,13 @@
     function JsonpCallback(json, data) {
         data = json.result;
     }
-	
+
 	<!-- map -->
     var WorldMap = L.map('map',
         {
             zoomControl: false
         }).setView([55.4, 10.3], 12);
-		
+
 	L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
         minZoom: 0,
         maxZoom: 19,
@@ -65,16 +65,16 @@
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: 'Map data &copy; Google maps</a>'
     }).addTo(WorldMap);
-	
+
 	<!-- soruce -->
     var OU44_1 = null;
 
-    CallURL("http://10.123.3.12/uploads/ble-maps/beacons.json", OU44_1);
+    CallURL("http://10.123.3.12/uploads/ou44_paths.geojson", OU44_1);
 
     var OU44 = null;
 
-    CallURL("http://10.123.3.12/uploads/ble-maps/beacons.json", OU44);
-	
+    CallURL("http://10.123.3.12/uploads/ou44_paths.geojson", OU44);
+
 	<!-- transform -->
     function transformCelciusToFahrenheit(value) {
         return value * 9 / 5 + 9 / 5 * 32;
@@ -91,14 +91,14 @@
             iconSize: [5, 5]
         });
     }
-	
+
     function geticonTemputur2() {
         return L.icon({
             iconUrl: 'jdsgj',
             iconSize: [7, 7]
         });
     }
-	
+
 	<!-- style -->
     function styledefaultStyle() {
         var style = {};
@@ -107,18 +107,18 @@
         style["weight"] = "1px";
         return style;
 	}
-    
+
 	function stylecoolStyle() {
         var style = styledefaultStyle();
         style["fillColor"] = "blue";
         style["pointerIcon"] = geticonTemputur();
         return style;
     }
-	
+
 	<!-- layer -->
     var layerfahrenheitLayer = L.geoJson(OU44_1, { filter: layerfahrenheitLayerFilter1, style: stylecoolStyle });
     layerfahrenheitLayer.addTo(WorldMap);
-	
+
 	<!-- filter -->
     function layerfahrenheitLayerFilter1(feature) {
         if (!feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
@@ -127,12 +127,12 @@
             return true;
         return false;
     }
-	
+
 	<!-- layer -->
     var layercelciusLayer = L.geoJson(OU44, { filter: celciusLayerFilter1, style : styledefaultStyle});
     L.geoJson(OU44, { filter: celciusLayerFilter2, style: stylecoolStyle}).addTo(layercelciusLayer);
     layercelciusLayer.addTo(WorldMap);
-	
+
 	<!-- filter -->
     function celciusLayerFilter1(feature) {
         if (!feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
@@ -145,7 +145,7 @@
             return true;
         return false;
     }
-	
+
 	<!-- filter -->
     function celciusLayerFilter2(feature) {
         console.log(feature.properties);
@@ -159,7 +159,7 @@
             return true;
         return false;
     }
-	
+
 	<!-- toogleBTN -->
     var tooglecelciusLayer =  L.easyButton({
         id: 'easy-button',
@@ -187,7 +187,7 @@
         ]
     }).addTo(WorldMap);
     tooglecelciusLayer.button.style.backgroundColor = 'grey';
-	
+
 	<!-- toogleBTN -->
     var tooglecelciusLayer  = L.easyButton({
         id: 'easy-button',

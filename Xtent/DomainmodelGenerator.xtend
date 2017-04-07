@@ -46,7 +46,6 @@ import org.example.domainmodel.domainmodel.TRUE
 import org.example.domainmodel.domainmodel.TouchZoomDisable
 import org.example.domainmodel.domainmodel.Transform
 import org.example.domainmodel.domainmodel.ToggleButton
-import org.example.domainmodel.domainmodel.ScreenLocation
 import org.example.domainmodel.domainmodel.TOPRIGHT
 import org.example.domainmodel.domainmodel.TOPLEFT
 import org.example.domainmodel.domainmodel.BOTTOMLEFT
@@ -57,10 +56,26 @@ import org.example.domainmodel.domainmodel.BOTTOMRIGHT
  * 
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
+ 
+ class State {
+    @Property
+    var int counter
+    
+    @Property
+    var String mapName
+    
+
+    new(int counter){
+        this.counter = counter
+    }
+}
+
 class DomainmodelGenerator extends AbstractGenerator {
-	String map = "";
+	var state = new State(0);
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-		val model = resource.allContents.filter(typeof(Model)).next		
+		val model = resource.allContents.filter(typeof(Model)).next
+		state.mapName = resource.allContents.filter(typeof(Map)).next.mapName
+		
 		fsa.generateFile("/Leaflet.html",generateLeafletHTML(model));
 	}
 	
@@ -132,16 +147,16 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch generateModelItemMember(Layer layer) '''
 	
 	var layer«layer.name» = L.geoJson(«layer.map.name», { filter: layer«layer.name»Filter1, style: style«layer.filter.get(0).style.name»() });
-	«var counter = 0»
+	«state.counter = 0»
 	«FOR l : layer.filter»
-	«IF counter != 0»
-		L.geoJson(OU44, { filter: layer«layer.name»Filter«counter+1», style: style«layer.filter.get(0).style.name»() }).addTo(layer«layer.name»);
+	«IF state.counter != 0»
+		L.geoJson(OU44, { filter: layer«layer.name»Filter«state.counter+1», style: style«layer.filter.get(0).style.name»() }).addTo(layer«layer.name»);
 	«ENDIF»
-	«counter++»
+	«state.setCounter(state.counter + 1)»
 	«ENDFOR»
-	layer«layer.name».addTo(«this.map»);
+	layer«layer.name».addTo(«state.mapName»);
 	
-	«counter = 1»
+	«state.setCounter(1)»
 	«/*FOR filter : layer.filter»
 	function layer«layer.name»Filter«counter»(feature) {
 	        if (feature == undefined || «FOR variable : filter.expression»  «ENDFOR»)
@@ -169,7 +184,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	                onClick: function (btn) {
 	                    btn.state('detoggled');
 	                    btn.button.style.backgroundColor = 'white';
-	                    «this.map».removeLayer(«buttons.layer.name»);
+	                    «state.mapName».removeLayer(«buttons.layer.name»);
 	                }
 	            },
 	            {
@@ -179,11 +194,11 @@ class DomainmodelGenerator extends AbstractGenerator {
 	                onClick: function (btn) {
 	                    btn.state('toggled');
 	                    btn.button.style.backgroundColor = 'grey';
-	                    «this.map».addLayer(«buttons.layer.name»);
+	                    «state.mapName».addLayer(«buttons.layer.name»);
 	                }
 	            }
 	        ]
-	    }).addTo(«this.map»);
+	    }).addTo(«state.mapName»);
 	    toogle«buttons.layer.name».button.style.backgroundColor = 'grey';
 	'''
 	
@@ -234,7 +249,6 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''
 	
 	def generateMaps(Map map) '''
-	«this.map = map.mapName»
 	var «map.mapName» = L.map('map', {
 		«generateMapContainterOptions(map.optinals.filter(typeof(MapContainterOptions)).toList())»
 	}).setView([«printDOUBLE(map.location.lat)», «printDOUBLE(map.location.long)»], «generateMapOptinalStartZoom(map)»);
@@ -362,5 +376,4 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch generateIncludeMember(Style s) '''
     <link rel="stylesheet" href="«s.source»" />
 	'''
-	
 }

@@ -1,9 +1,9 @@
 grammar org.example.domainmodel.Domainmodel with org.eclipse.xtext.common.Terminals
-
+ 
 generate domainmodel "http://www.example.org/domainmodel/Domainmodel"
-
+ 
 Model:
-    leafletVersion=LeafletVersion? includes+=Include* map=Map modelItems+=ModelItems*
+    leafletVersion=LeafletVersion? includes+=Include* map=Map modelItems+=ModelItems*   
 ;
 
 ModelItems:
@@ -19,7 +19,7 @@ LeafletSupportedVersions:
 ;
 
 Button:
-	'button' ToggleButton
+	'button' btn=ToggleButton
 ;
 
 ToggleButton:
@@ -35,7 +35,7 @@ Styling:
 ;
 
 CSSStyle:
-	lineColor?=LineColor | lineWidth?=LineWidth | backgroundColor?=BackgroundColor | backgroundOpacity?=BackgroundOpacity | pointerIcon?= PointerIcon
+	LineColor | LineWidth | BackgroundColor | BackgroundOpacity | PointerIcon
 ;
 
 PointerIcon:
@@ -43,7 +43,7 @@ PointerIcon:
 ;
 
 Icon:
-	'icon' name=ID 'size' size=INT 'source' source=STRING
+	'icon' name=ID 'size' size=INT 'source' source=STRING 
 ;
 
 BackgroundOpacity:
@@ -67,7 +67,7 @@ LineColor:
 ;
 
 Transform:
-	'transform' name=ID variable=ID expression=MathTermSimple
+	'transform' name=ID variable=ID expression=MathTermAdv
 ;
 
 Layer:
@@ -82,24 +82,24 @@ MapType:
 	{POINT}'point' | {POLYGON}'polygon'
 ;
 
-MathTermSimple returns MathExp:
-	MathTermAdv ({MathOp.left=current} op=OperatorAddMinus right=MathTermAdv)*
+MathTermAdv returns MathExp:
+	MathTermSimple ({MathOp.left=current} op=OperatorAddMinus right=MathTermAdv)?
 ;
 
-MathTermAdv returns MathExp:
-	MathFactor ({MathOp.left=current} op=OperatorMultiDiv right=MathFactor)*
+MathTermSimple returns MathExp:
+	MathFactor ({MathOp.left=current} op=OperatorMultiDiv right=MathTermSimple)?
 ;
 
 MathFactor  returns MathExp:
-	Term | {Value} 'value' | '('MathTermSimple')'
+	Term| {value}'value' | '('MathTermAdv')'
 ;
 
 OperatorAddMinus:
-	{MINUS} '-' | {PLUS} '+'
+	{MINUS} '-'| {PLUS} '+'
 ;
 
 OperatorMultiDiv:
-	{MULTIPLI} '*' | {DIVISION} '/'
+	{MULTIPLI} '*'| {DIVISION} '/'
 ;
 
 Term:
@@ -163,7 +163,7 @@ MapOptions:
 ;
 
 MapContainterOptions:
-	ScrollWheelZoom | DoubleClickZoom| KeyboardDisable| DisableZoomBtn | TouchZoomDisable | DraggingDisable
+	ScrollWheelZoom | DoubleClickZoom| KeyboardDisable| DisableZoomBtn | TouchZoomDisable | DraggingDisable 
 ;
 
 MapTilelayerOptions:
@@ -223,9 +223,6 @@ ApiKey:
 Attribution:
 	'attribution' attribution=STRING
 ;
-
-
-
 
 AllTypes:
 	NumberTypes |string=STRING | BOOLEAN | string=ID

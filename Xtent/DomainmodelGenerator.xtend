@@ -83,6 +83,12 @@ import org.example.domainmodel.domainmodel.EQMORE
 import org.example.domainmodel.domainmodel.NOT
 import org.example.domainmodel.domainmodel.NumberTypes
 import org.example.domainmodel.domainmodel.BOOLEAN
+import org.example.domainmodel.domainmodel.OperatorAddMinus
+import org.example.domainmodel.domainmodel.MINUS
+import org.example.domainmodel.domainmodel.PLUS
+import org.example.domainmodel.domainmodel.MULTIPLI
+import org.example.domainmodel.domainmodel.DIVISION
+import org.example.domainmodel.services.DomainmodelGrammarAccess.MathFactorElements
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -118,12 +124,16 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def generateLeafletHTML(Model model)'''
 		«generateStaticHeader()»
+		
 		«generateInclude(model.includes)»
+		
 		«generateStaticHTMLBODY()»
+		
 		«generateMaps(model.map)»
+		
 		«generateModelItem(model.modelItems)»
-		«generateStatickFooter()»
-	'''
+		
+		«generateStatickFooter()»'''
 	
 	def generateModelItem(EList<ModelItems> modelItems)'''
 	«FOR mi : modelItems»
@@ -214,7 +224,6 @@ class DomainmodelGenerator extends AbstractGenerator {
 	                        return false;
 	            «ENDIF»
 	         «filter.expression.generateFilterExpression»   
-	        
 	        return false;
 	}
 	«state.setCounter(state.counter + 1)»
@@ -226,7 +235,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	{
 		return true;
 	}
-	'''	
+	'''
 	
 	def dispatch CharSequence findSubExpression(LogicExpression expression)
 	{
@@ -249,18 +258,12 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''(«expression.left.findSubExpression» || «expression.right.findSubExpression»)'''
 	
 	def dispatch CharSequence findSubExpression(AllTypes type)
-	'''«IF(type.id !== null)»feature.properties.«type.id»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
+	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression»«ELSE»feature.properties.«type.id»«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
 	
 	def dispatch CharSequence findSubExpression(BOOLEAN bool)'''«printBOOLEAN(bool)»'''
 	
 	def dispatch CharSequence findSubExpression(NumberTypes num)
-	'''
-	«IF(num.int !== null)»
-	«printINTEGER(num.int)»
-	«ELSEIF(num.double !== null)»
-	«printDOUBLE(num.double)»
-	«ENDIF»
-	'''
+	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
 	
 	def dispatch CharSequence findSubExpression(LogicExp exp)
 	'''(«exp.left.findSubExpression»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression»)'''
@@ -274,17 +277,11 @@ class DomainmodelGenerator extends AbstractGenerator {
 	}
 	
 	def dispatch CharSequence findSubExpression(Transform exp)
-	{
+	'''transform«exp.name»(feature.properties.«exp.variable»)'''
 		
-	}
-	
-	
-	
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
-	
-	
-	
+		
 	def Set<String> findVariabelsForFilter(LogicExpression dis){
 		var variabels = new HashSet<String>();
 		dis.findVariable(variabels);
@@ -396,7 +393,26 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch generateLocation(BOTTOMRIGHT location) '''bottomright'''
 	
 	def dispatch generateModelItemMember(Transform transform) '''
+	 function transform«transform.name»(value) {
+	 	return «transform.expression.generateTransformExp»
+	 }
 	'''
+	
+	def dispatch CharSequence generateTransformExp(MathOp exp)'''«exp.left.generateTransformExp»«exp.op.generateTransformExp»«exp.right.generateTransformExp»'''
+	
+	def dispatch CharSequence generateTransformExp(MINUS op)'''-'''
+	def dispatch CharSequence generateTransformExp(PLUS op)'''+'''
+	def dispatch CharSequence generateTransformExp(MULTIPLI op)'''*'''
+	def dispatch CharSequence generateTransformExp(DIVISION op)'''/'''
+	def dispatch CharSequence generateTransformExp(value value)'''value'''	
+	
+
+	def dispatch CharSequence generateTransformExp(MathTerm exp)
+	'''«IF (exp.transform !== null)»transform«exp.transform.name»(value)«ENDIF»'''
+	
+	def dispatch CharSequence generateTransformExp(NumberTypes num)
+	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+	
 	
 	def dispatch generateModelItemMember(DataSource dataSoruce) '''
 	var «dataSoruce.name» = null;
@@ -450,26 +466,13 @@ class DomainmodelGenerator extends AbstractGenerator {
 		«ENDFOR»
 	'''
 	
-	def printDOUBLE(DOUBLE value)'''
-	«IF(value.value.neq)»
-	-«value.value.value».«value.decimals»
-	«ELSE»
-	«value.value.value».«value.decimals»
-	«ENDIF»
-	'''
+	def printDOUBLE(DOUBLE value)'''«IF(value.value.neq)»-«value.value.value».«value.decimals»«ELSE»«value.value.value».«value.decimals»«ENDIF»'''
 	
-	def printINTEGER(INTEGER value)'''
-	«IF(value.neq)»
-	-«value.value»
-	«ELSE»
-	«value.value»
-	«ENDIF»
-	'''
+	def printINTEGER(INTEGER value)'''«IF(value.neq)»-«value.value»«ELSE»«value.value»«ENDIF»'''
 	
 	def dispatch printBOOLEAN(TRUE value)''' true '''
 	
 	def dispatch printBOOLEAN(FALSE value)''' false '''
-	
 	
 	def dispatch generateMapTilelayerOptionsMember(MinZoom s)'''
 	minZoom : «s.zoom»

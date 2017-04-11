@@ -71,7 +71,7 @@ Transform:
 ;
 
 Layer:
-	'layer' name=ID 'from' map=[DataSource] '{' filter+=Filter (filter+=Filter)*'}'
+	'layer' name=ID 'from' datasource=[DataSource] '{' filter+=Filter (filter+=Filter)*'}'
 ;
 
 Filter:
@@ -91,7 +91,7 @@ MathTermAdv returns MathExp:
 ;
 
 MathFactor  returns MathExp:
-	Term| {Value} 'value' | '('MathTermSimple')'
+	MathTerm| {Value} 'value' | '('MathTermSimple')'
 ;
 
 OperatorAddMinus:
@@ -102,7 +102,7 @@ OperatorMultiDiv:
 	{MULTIPLI} '*'| {DIVISION} '/'
 ;
 
-Term:
+MathTerm:
 	NumberTypes | transform=[Transform]
 ;
 
@@ -225,7 +225,7 @@ Attribution:
 ;
 
 AllTypes:
-	NumberTypes |string=STRING | BOOLEAN | string=ID
+	NumberTypes |string=STRING | BOOLEAN | id=ID
 ;
 
 NumberTypes:

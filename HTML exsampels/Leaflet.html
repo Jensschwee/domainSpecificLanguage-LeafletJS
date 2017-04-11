@@ -116,7 +116,7 @@
     function layerfahrenheitLayerFilter1(feature) {
         if (feature == undefined || !feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
             return false;
-        if (transformCelciusToFahrenheit(feature.properties.Temperature) > 50 && feature.properties.Motion !== 0)
+        if (transformCelciusToFahrenheit(feature.properties.Temperature > 50 && feature.properties.Motion !== 0)
             return true;
         return false;
     }

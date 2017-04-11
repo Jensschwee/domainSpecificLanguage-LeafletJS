@@ -60,7 +60,6 @@ import org.eclipse.xtext.Condition
 import java.awt.CompositeContext
 import org.eclipse.xtext.Conjunction
 import org.example.domainmodel.domainmodel.Comparison
-import org.example.domainmodel.domainmodel.ComparisonTerms
 import org.eclipse.xtext.impl.ConditionImpl
 import org.eclipse.emf.ecore.EObject
 import org.example.domainmodel.domainmodel.LogicExp
@@ -70,7 +69,6 @@ import java.util.HashSet
 import java.util.HashMap
 import org.example.domainmodel.domainmodel.MathOp
 import org.example.domainmodel.domainmodel.MathExp
-import org.example.domainmodel.domainmodel.value
 import org.example.domainmodel.domainmodel.MathTerm
 import org.example.domainmodel.domainmodel.MapType
 import org.example.domainmodel.domainmodel.POINT
@@ -89,6 +87,7 @@ import org.example.domainmodel.domainmodel.PLUS
 import org.example.domainmodel.domainmodel.MULTIPLI
 import org.example.domainmodel.domainmodel.DIVISION
 import org.example.domainmodel.services.DomainmodelGrammarAccess.MathFactorElements
+import org.example.domainmodel.domainmodel.Value
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -149,12 +148,12 @@ class DomainmodelGenerator extends AbstractGenerator {
 	        });
 	    }
 	    
-    function getEasybuttonImage«icon.name»() {
-            var height = «icon.size»;
-            var width = «icon.size»;
-            var imageSrc = '«icon.source»';
-            return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
-    }
+	function getEasybuttonImage«icon.name»() {
+	var height = «icon.size»;
+	width = «icon.size»;
+	c = '«icon.source»';
+	return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
 	'''
 	
 	def dispatch generateModelItemMember(Styling style) '''
@@ -339,7 +338,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 		//DO NOTHING	
 	}
 	
-	def dispatch void findTransforms(value mat, Set<String> variabels)
+	def dispatch void findTransforms(Value mat, Set<String> variabels)
 	{
 		//DO NOTHING
 	}
@@ -398,13 +397,13 @@ class DomainmodelGenerator extends AbstractGenerator {
 	 }
 	'''
 	
-	def dispatch CharSequence generateTransformExp(MathOp exp)'''«exp.left.generateTransformExp»«exp.op.generateTransformExp»«exp.right.generateTransformExp»'''
+	def dispatch CharSequence generateTransformExp(MathOp exp)'''(«exp.left.generateTransformExp»«exp.op.generateTransformExp»«exp.right.generateTransformExp»)'''
 	
 	def dispatch CharSequence generateTransformExp(MINUS op)'''-'''
 	def dispatch CharSequence generateTransformExp(PLUS op)'''+'''
 	def dispatch CharSequence generateTransformExp(MULTIPLI op)'''*'''
 	def dispatch CharSequence generateTransformExp(DIVISION op)'''/'''
-	def dispatch CharSequence generateTransformExp(value value)'''value'''	
+	def dispatch CharSequence generateTransformExp(Value value)'''value'''	
 	
 
 	def dispatch CharSequence generateTransformExp(MathTerm exp)

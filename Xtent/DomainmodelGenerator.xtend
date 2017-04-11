@@ -67,6 +67,11 @@ import org.example.domainmodel.domainmodel.LogicExp
 import org.eclipse.emf.common.notify.Notifier
 import java.util.Set
 import java.util.HashSet
+import java.util.HashMap
+import org.example.domainmodel.domainmodel.MathOp
+import org.example.domainmodel.domainmodel.MathExp
+import org.example.domainmodel.domainmodel.value
+import org.example.domainmodel.domainmodel.MathTerm
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -77,6 +82,9 @@ import java.util.HashSet
     
     @Property
     var String mapName
+    
+    @Property
+    var Set<Transform> transforms = new HashSet();
 
     new(int counter){
         this.counter = counter
@@ -93,6 +101,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val model = resource.allContents.filter(typeof(Model)).next
 		state.mapName = resource.allContents.filter(typeof(Map)).next.mapName
+		state.transforms = resource.allContents.filter(typeof(Transform)).toSet()
 		fsa.generateFile("/Leaflet.html",generateLeafletHTML(model));
 	}
 	
@@ -186,14 +195,9 @@ class DomainmodelGenerator extends AbstractGenerator {
 	 
 	«FOR filter : layer.filter»
 	«var variabels =  filter.expression.findVariabelsForFilter»
-	«FOR str : variabels»
-		«str»
-	«ENDFOR»
 	function layer«layer.name»Filter«state.counter»(feature) {
-	        if (feature == undefined ||)
-	            return false;
-	        if (transformCelciusToFahrenheit(feature.properties.Temperature) > 50 && feature.properties.Motion !== 0)
-	            return true;
+	        if (feature == undefined || «FOR str : variabels SEPARATOR "||"»!feature.properties.hasAttribute("«str»") «ENDFOR»)
+	            return false;	        
 	        return false;
 	}
 	«state.setCounter(state.counter + 1)»
@@ -223,8 +227,17 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch void findVariable(AllTypes at, Set<String> variabels){
 		if(at.id !== null)
-			variabels.add(at.id);
-		//at.findVariable(variabels);
+		{
+			var transform = state.transforms.findFirst[it.name==at.id]
+			if(transform === null)
+			{
+				variabels.add(at.id);
+			}
+			else
+			{
+				transform.findTransformVariables(variabels);
+			}
+		}
 	}
 	
 	def dispatch void findVariable(Comparison con, Set<String> variabels){
@@ -235,6 +248,37 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch generateModelItemMember(Button button) '''
 	«generateButton(button.btn)»
 	'''
+	
+	def findTransformVariables(Transform transform, Set<String> variabels)
+	{
+		variabels.add(transform.variable);
+		if(transform.expression !== null)
+			transform.expression.findTransforms(variabels);
+	}
+	
+	def dispatch void findTransforms(MathExp mat, Set<String> variabels)
+	{
+		//DO NOTHING	
+	}
+	
+	def dispatch void findTransforms(value mat, Set<String> variabels)
+	{
+		//DO NOTHING
+	}
+	
+	def dispatch void findTransforms(MathOp mat, Set<String> variabels)
+	{
+		if(mat.left !== null)
+			mat.left.findTransforms(variabels)
+		if(mat.right !== null)	
+			mat.right.findTransforms(variabels)
+	}
+	
+	def dispatch void findTransforms(MathTerm mat, Set<String> variabels)
+	{
+		if(mat.transform !== null)
+			mat.transform.findTransformVariables(variabels);
+	}
 	
 	def generateButton(ToggleButton buttons)'''
 	var toogle«buttons.layer.name» = L.easyButton({

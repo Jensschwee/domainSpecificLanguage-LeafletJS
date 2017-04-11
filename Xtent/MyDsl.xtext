@@ -229,7 +229,7 @@ AllTypes:
 ;
 
 NumberTypes:
-	int=INTEGER |double=DOUBLE
+	double=DOUBLE|int=INTEGER
 ;
 
 INTEGER:

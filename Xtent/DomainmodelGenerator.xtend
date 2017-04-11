@@ -151,7 +151,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	function getEasybuttonImage«icon.name»() {
 	var height = «icon.size»;
 	width = «icon.size»;
-	c = '«icon.source»';
+	imageSrc = '«icon.source»';
 	return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
 	}
 	'''
@@ -368,7 +368,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	                onClick: function (btn) {
 	                    btn.state('detoggled');
 	                    btn.button.style.backgroundColor = 'white';
-	                    «state.mapName».removeLayer(«buttons.layer.name»);
+	                    «state.mapName».removeLayer(layer«buttons.layer.name»);
 	                }
 	            },
 	            {
@@ -378,7 +378,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	                onClick: function (btn) {
 	                    btn.state('toggled');
 	                    btn.button.style.backgroundColor = 'grey';
-	                    «state.mapName».addLayer(«buttons.layer.name»);
+	                    «state.mapName».addLayer(layer«buttons.layer.name»);
 	                }
 	            }
 	        ]
@@ -560,7 +560,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''
 	
 	def dispatch generateIncludeMember(Script s) '''
-	<script src="«s.source»"/>
+	<script src="«s.source»"></script>
 	'''
 	def dispatch generateIncludeMember(Style s) '''
     <link rel="stylesheet" href="«s.source»" />

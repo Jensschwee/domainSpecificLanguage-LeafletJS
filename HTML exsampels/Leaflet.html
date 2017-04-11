@@ -138,7 +138,7 @@
     }
 
     function celciusLayerFilter2(feature) {
-        if (feature == undefined || !feature.properties.hasAttribute("Temperature") || !feature.properties.hasAttribute("CO2"))
+		if (feature == undefined || !feature.properties.hasAttribute("Temperature") || !feature.properties.hasAttribute("CO2") || !feature.properties.hasAttribute("Lux"))
             return false;
         if (feature.geometry.type !== "Point")
             return false;

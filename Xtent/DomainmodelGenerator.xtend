@@ -50,32 +50,49 @@ import org.example.domainmodel.domainmodel.TOPRIGHT
 import org.example.domainmodel.domainmodel.TOPLEFT
 import org.example.domainmodel.domainmodel.BOTTOMLEFT
 import org.example.domainmodel.domainmodel.BOTTOMRIGHT
+import org.eclipse.xtext.Disjunction
+import org.example.domainmodel.domainmodel.LogicExpression
+import java.util.LinkedList
+import javax.xml.ws.Dispatch
+import org.example.domainmodel.domainmodel.AllTypes
+import org.eclipse.xtext.CompositeCondition
+import org.eclipse.xtext.Condition
+import java.awt.CompositeContext
+import org.eclipse.xtext.Conjunction
+import org.example.domainmodel.domainmodel.Comparison
+import org.example.domainmodel.domainmodel.ComparisonTerms
+import org.eclipse.xtext.impl.ConditionImpl
+import org.eclipse.emf.ecore.EObject
+import org.example.domainmodel.domainmodel.LogicExp
+import org.eclipse.emf.common.notify.Notifier
+import java.util.Set
+import java.util.HashSet
 
 /**
- * Generates code from your model files on save.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
- */
- 
+  * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
+  */
  class State {
     @Property
     var int counter
     
     @Property
     var String mapName
-    
 
     new(int counter){
         this.counter = counter
     }
 }
 
+/**
+ * Generates code from your model files on save.
+ * 
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
+ */
 class DomainmodelGenerator extends AbstractGenerator {
 	var state = new State(0);
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val model = resource.allContents.filter(typeof(Model)).next
 		state.mapName = resource.allContents.filter(typeof(Map)).next.mapName
-		
 		fsa.generateFile("/Leaflet.html",generateLeafletHTML(model));
 	}
 	
@@ -146,28 +163,74 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateModelItemMember(Layer layer) '''
 	
-	var layer«layer.name» = L.geoJson(«layer.map.name», { filter: layer«layer.name»Filter1, style: style«layer.filter.get(0).style.name»() });
+	«IF layer.filter.get(0).style !== null»
+		var layer«layer.name» = L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter1, style: style«layer.filter.get(0).style.name» });
+	«ELSE»
+		var layer«layer.name» = L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter1});
+	«ENDIF»
 	«state.counter = 0»
 	«FOR l : layer.filter»
 	«IF state.counter != 0»
-		L.geoJson(OU44, { filter: layer«layer.name»Filter«state.counter+1», style: style«layer.filter.get(0).style.name»() }).addTo(layer«layer.name»);
+		«IF l.style !== null»
+			L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter«state.counter+1», style: style«layer.filter.get(state.counter).style.name» }).addTo(layer«layer.name»);
+		«ELSE»
+			L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter«state.counter+1»}).addTo(layer«layer.name»);
+		«ENDIF»
 	«ENDIF»
+	
 	«state.setCounter(state.counter + 1)»
 	«ENDFOR»
 	layer«layer.name».addTo(«state.mapName»);
 	
 	«state.setCounter(1)»
-	«/*FOR filter : layer.filter»
-	function layer«layer.name»Filter«counter»(feature) {
-	        if (feature == undefined || «FOR variable : filter.expression»  «ENDFOR»)
+	 
+	«FOR filter : layer.filter»
+	«var variabels =  filter.expression.findVariabelsForFilter»
+	«FOR str : variabels»
+		«str»
+	«ENDFOR»
+	function layer«layer.name»Filter«state.counter»(feature) {
+	        if (feature == undefined ||)
 	            return false;
 	        if (transformCelciusToFahrenheit(feature.properties.Temperature) > 50 && feature.properties.Motion !== 0)
 	            return true;
 	        return false;
-    }
-    «counter++»
-	«ENDFOR*/»
+	}
+	«state.setCounter(state.counter + 1)»
+	«ENDFOR»
 	'''
+	
+	def Set<String> findVariabelsForFilter(LogicExpression dis){
+		var variabels = new HashSet<String>();
+		dis.findVariable(variabels);
+		return variabels;
+	}
+	
+	def dispatch void findVariable(Disjunction di, Set<String> variabels){
+		di.left.findVariable(variabels);
+		di.right.findVariable(variabels);
+	}
+	
+	def dispatch void findVariable(Conjunction con, Set<String> variabels){
+		con.left.findVariable(variabels);
+		con.right.findVariable(variabels);
+	}
+	
+	def dispatch void findVariable(LogicExp le, Set<String> variabels){
+		le.left.findVariable(variabels);
+		le.right.findVariable(variabels);
+	}
+	
+	def dispatch void findVariable(AllTypes at, Set<String> variabels){
+		if(at.id !== null)
+			variabels.add(at.id);
+		//at.findVariable(variabels);
+	}
+	
+	def dispatch void findVariable(Comparison con, Set<String> variabels){
+		con.left.findVariable(variabels);		
+		con.right.findVariable(variabels);
+	}
 	
 	def dispatch generateModelItemMember(Button button) '''
 	«generateButton(button.btn)»
@@ -217,7 +280,6 @@ class DomainmodelGenerator extends AbstractGenerator {
             «dataSoruce.name» = JSON.parse(data);
     }));
 	'''
-	
 	
 	def generateStaticHTMLBODY() '''
 	</head>

@@ -72,6 +72,17 @@ import org.example.domainmodel.domainmodel.MathOp
 import org.example.domainmodel.domainmodel.MathExp
 import org.example.domainmodel.domainmodel.value
 import org.example.domainmodel.domainmodel.MathTerm
+import org.example.domainmodel.domainmodel.MapType
+import org.example.domainmodel.domainmodel.POINT
+import org.example.domainmodel.domainmodel.POLYGON
+import org.example.domainmodel.domainmodel.LESS
+import org.example.domainmodel.domainmodel.MORE
+import org.example.domainmodel.domainmodel.EQ
+import org.example.domainmodel.domainmodel.EQLESS
+import org.example.domainmodel.domainmodel.EQMORE
+import org.example.domainmodel.domainmodel.NOT
+import org.example.domainmodel.domainmodel.NumberTypes
+import org.example.domainmodel.domainmodel.BOOLEAN
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -196,13 +207,83 @@ class DomainmodelGenerator extends AbstractGenerator {
 	«FOR filter : layer.filter»
 	«var variabels =  filter.expression.findVariabelsForFilter»
 	function layer«layer.name»Filter«state.counter»(feature) {
-	        if (feature == undefined || «FOR str : variabels SEPARATOR "||"»!feature.properties.hasAttribute("«str»") «ENDFOR»)
-	            return false;	        
+	        if (feature == undefined ||«FOR str : variabels SEPARATOR "|| "»!feature.properties.hasAttribute("«str»") «ENDFOR»)
+	            return false;
+	            «IF(filter.mapType !== null)»
+	            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
+	                        return false;
+	            «ENDIF»
+	         «filter.expression.generateFilterExpression»   
+	        
 	        return false;
 	}
 	«state.setCounter(state.counter + 1)»
 	«ENDFOR»
 	'''
+	
+	def generateFilterExpression(LogicExpression expression)'''
+	if(«expression.findSubExpression»)
+	{
+		return true;
+	}
+	'''	
+	
+	def dispatch CharSequence findSubExpression(LogicExpression expression)
+	{
+		//DO NOTHING
+	}
+	
+	def dispatch CharSequence findSubExpression(Comparison expression)
+	'''«expression.left.findSubExpression»«expression.oparator.findSubExpression»«expression.right.findSubExpression»'''	
+	def dispatch CharSequence findSubExpression(LESS less)''' < '''
+	def dispatch CharSequence findSubExpression(MORE less)''' > '''
+	def dispatch CharSequence findSubExpression(EQ less)''' == '''
+	def dispatch CharSequence findSubExpression(EQLESS less)''' <= '''
+	def dispatch CharSequence findSubExpression(EQMORE less)''' >= '''
+	def dispatch CharSequence findSubExpression(NOT less)''' != '''
+			
+	def dispatch CharSequence  findSubExpression(Disjunction expression)
+	'''(«expression.left.findSubExpression» && «expression.right.findSubExpression»)'''
+	
+	def dispatch CharSequence  findSubExpression(Conjunction expression)
+	'''(«expression.left.findSubExpression» || «expression.right.findSubExpression»)'''
+	
+	def dispatch CharSequence findSubExpression(AllTypes type)
+	'''«IF(type.id !== null)»feature.properties.«type.id»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
+	
+	def dispatch CharSequence findSubExpression(BOOLEAN bool)'''«printBOOLEAN(bool)»'''
+	
+	def dispatch CharSequence findSubExpression(NumberTypes num)
+	'''
+	«IF(num.int !== null)»
+	«printINTEGER(num.int)»
+	«ELSEIF(num.double !== null)»
+	«printDOUBLE(num.double)»
+	«ENDIF»
+	'''
+	
+	def dispatch CharSequence findSubExpression(LogicExp exp)
+	'''(«exp.left.findSubExpression»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression»)'''
+	
+	def dispatch CharSequence findSubExpression(MathTerm exp)
+	{
+		if(exp.transform !== null)
+		{
+			exp.transform.findSubExpression
+		}
+	}
+	
+	def dispatch CharSequence findSubExpression(Transform exp)
+	{
+		
+	}
+	
+	
+	
+	def dispatch getMaptypeGenerate(POINT type)'''Point'''
+	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
+	
+	
 	
 	def Set<String> findVariabelsForFilter(LogicExpression dis){
 		var variabels = new HashSet<String>();

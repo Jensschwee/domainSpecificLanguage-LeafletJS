@@ -88,6 +88,8 @@ import org.example.domainmodel.domainmodel.MULTIPLI
 import org.example.domainmodel.domainmodel.DIVISION
 import org.example.domainmodel.services.DomainmodelGrammarAccess.MathFactorElements
 import org.example.domainmodel.domainmodel.Value
+import org.example.domainmodel.domainmodel.Filter
+import org.example.domainmodel.domainmodel.CSSStyle
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -102,6 +104,9 @@ import org.example.domainmodel.domainmodel.Value
     @Property
     var Set<Transform> transforms = new HashSet();
 
+ 	@Property
+    var Set<Layer> layers = new HashSet();
+    
     new(int counter){
         this.counter = counter
     }
@@ -118,6 +123,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 		val model = resource.allContents.filter(typeof(Model)).next
 		state.mapName = resource.allContents.filter(typeof(Map)).next.mapName
 		state.transforms = resource.allContents.filter(typeof(Transform)).toSet()
+		state.layers = resource.allContents.filter(typeof(Layer)).toSet()
 		fsa.generateFile("/Leaflet.html",generateLeafletHTML(model));
 	}
 	
@@ -150,8 +156,8 @@ class DomainmodelGenerator extends AbstractGenerator {
 	    
 	function getEasybuttonImage«icon.name»() {
 	var height = «icon.size»;
-	width = «icon.size»;
-	imageSrc = '«icon.source»';
+	var width = «icon.size»;
+	var imageSrc = '«icon.source»';
 	return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
 	}
 	'''
@@ -192,40 +198,24 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateModelItemMember(Layer layer) '''
 	
-	«IF layer.filter.get(0).style !== null»
-		var layer«layer.name» = L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter1, style: style«layer.filter.get(0).style.name» });
-	«ELSE»
-		var layer«layer.name» = L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter1});
-	«ENDIF»
-	«state.counter = 0»
-	«FOR l : layer.filter»
-	«IF state.counter != 0»
-		«IF l.style !== null»
-			L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter«state.counter+1», style: style«layer.filter.get(state.counter).style.name» }).addTo(layer«layer.name»);
-		«ELSE»
-			L.geoJson(«layer.datasource.name», { filter: layer«layer.name»Filter«state.counter+1»}).addTo(layer«layer.name»);
-		«ENDIF»
-	«ENDIF»
-	
-	«state.setCounter(state.counter + 1)»
-	«ENDFOR»
-	layer«layer.name».addTo(«state.mapName»);
 	
 	«state.setCounter(1)»
 	 
 	«FOR filter : layer.filter»
-	«var variabels =  filter.expression.findVariabelsForFilter»
-	function layer«layer.name»Filter«state.counter»(feature) {
-	        if (feature == undefined ||«FOR str : variabels SEPARATOR "|| "»!feature.properties.hasAttribute("«str»") «ENDFOR»)
-	            return false;
-	            «IF(filter.mapType !== null)»
-	            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
-	                        return false;
-	            «ENDIF»
-	         «filter.expression.generateFilterExpression»   
-	        return false;
-	}
-	«state.setCounter(state.counter + 1)»
+		«IF filter.expression !== null»
+			«var variabels =  filter.expression.findVariabelsForFilter»
+			function layer«layer.name»Filter«state.counter»(feature) {
+			        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties.«str» === undefined «ENDFOR»)
+			            return false;
+			            «IF(filter.mapType !== null)»
+			            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
+			                        return false;
+			            «ENDIF»
+			         «filter.expression.generateFilterExpression»   
+			        return false;
+			}
+			«state.setCounter(state.counter + 1)»
+		«ENDIF»
 	«ENDFOR»
 	'''
 	
@@ -393,7 +383,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateModelItemMember(Transform transform) '''
 	 function transform«transform.name»(value) {
-	 	return «transform.expression.generateTransformExp»
+	 	return «transform.expression.generateTransformExp»;
 	 }
 	'''
 	
@@ -415,11 +405,90 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateModelItemMember(DataSource dataSoruce) '''
 	var «dataSoruce.name» = null;
+	«var layers = state.layers.filter[it.datasource.name === dataSoruce.name]»
+	«IF layers !== null»
+		«FOR l : layers»
+			var layer«l.name» = null;
+		«ENDFOR»
+	«ENDIF»
     loadJSON("«dataSoruce.getSourceLocation»",
         (function (data) {
             «dataSoruce.name» = JSON.parse(data);
+            «FOR l : layers»
+				«IF l.filter.size() !== 0»
+	        		«IF l.filter.get(0).expression !== null»
+	        			«IF l.filter.get(0).style !== null»
+	        			layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
+	        				«ELSE»
+	        					layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»});
+	        			«ENDIF»
+	        		«ELSE»
+	        			«IF l.filter.get(0).style !== null»
+	        					layer«l.name» = L.geoJson(«l.datasource.name», { style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
+	        				«ELSE»
+	        					layer«l.name» = L.geoJson(«l.datasource.name» «l.filter.get(0).generateCustumPointIcon»);
+	        			«ENDIF»
+	        		«ENDIF»
+            	«ELSE»
+            		layer«l.name» = L.geoJson(«l.datasource.name»,{ «l.filter.get(0).generateCustumPointIcon»});
+            	«ENDIF»
+            	«state.counter = 0»
+            	«FOR filter : l.filter»
+            	«IF state.counter != 0»
+            		«IF filter.expression !== null»
+            			«IF filter.style !== null»
+				L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
+            				«ELSE»
+            					L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
+            			«ENDIF»
+            		«ELSE»
+            			«IF filter.style !== null»
+            					L.geoJson(«l.datasource.name», {style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
+            				«ELSE»
+            					L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»});
+            			«ENDIF»
+            		«ENDIF»
+            	«ENDIF»
+            	«state.setCounter(state.counter + 1)»
+            	«ENDFOR»
+            	layer«l.name».addTo(«state.mapName»);
+			«ENDFOR»  
     }));
 	'''
+	
+	def generateCustumPointIcon(Filter filter)'''
+	«var makerName = filter.style.findIconStyle»
+	«IF makerName !== null»
+	,
+    pointToLayer: function(feature, latlng) {
+        return L.marker(latlng, { icon: getIcon«makerName»() });
+    }
+	«ENDIF»
+	'''
+	
+	def String findIconStyle(Styling styling)
+	{
+		for (element : styling.styles) {
+			var results = element.findpointIcon;
+			if(results !== null)
+				return results;
+		}
+		if(styling.base !== null)
+			return styling.base.findIconStyle
+		return null
+	}
+	
+	def dispatch String findpointIcon(PointerIcon style)
+	{
+		return style.icon.name;
+	}
+	
+	def  dispatch String findpointIcon(CSSStyle style)
+	{
+		return null;
+	}
+	
+	
 	
 	def generateStaticHTMLBODY() '''
 	</head>

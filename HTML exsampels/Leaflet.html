@@ -52,18 +52,23 @@
     var WorldMap = L.map('map',
     {
         zoomControl: false
-    }).setView([55.4, 10.3], 12);
+    }).setView([38.79930767201779,-77.12911152370515], 12);
 
     var OU44_1 = null;
     loadJSON("https://www.mapbox.com/help/data/stations.geojson",
         (function (data) {
+			console.log(data)
             OU44_1 = JSON.parse(data);
         }));
 
     var OU44 = null;
+	var layercelciusLayer = null
     loadJSON("https://www.mapbox.com/help/data/stations.geojson",
         (function (data) {
             OU44 = JSON.parse(data);
+			layercelciusLayer = L.geoJson(OU44, { filter: celciusLayerFilter1, style: stylecoolStyle });
+			L.geoJson(OU44, { filter: celciusLayerFilter2, style: stylecoolStyle }).addTo(layercelciusLayer);
+			layercelciusLayer.addTo(WorldMap);
         }));
 
     L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -114,21 +119,17 @@
     layerfahrenheitLayer.addTo(WorldMap);
 
     function layerfahrenheitLayerFilter1(feature) {
-        if (feature == undefined || !feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion"))
-            return false;
-        if (transformCelciusToFahrenheit(feature.properties.Temperature > 50 && feature.properties.Motion !== 0)
+		if (feature == undefined || feature.properties === undefined  || feature.properties.Temperature ===  undefined || !feature.properties.Motion ===  undefined)
+		return false;
+        if (transformCelciusToFahrenheit(feature.properties.Temperature > 50 && feature.properties.Motion !== 0))
             return true;
         return false;
     }
-
-    var layercelciusLayer = L.geoJson(OU44, { filter: celciusLayerFilter1, style: styledefaultStyle });
-    L.geoJson(OU44, { filter: celciusLayerFilter2, style: stylecoolStyle }).addTo(layercelciusLayer);
-    layercelciusLayer.addTo(WorldMap);
-
+	
     function celciusLayerFilter1(feature) {
-        if (feature == undefined || !feature.properties.hasOwnProperty("Temperature") || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
+        if (feature == undefined || feature.properties === undefined || !(feature.properties.hasOwnProperty("Temperature")) || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
             return false;
-        if (feature.geometry.type !== "Polygon")
+        if (feature.geometry.type !== "Point")
             return false;
         if (feature.properties.Temperature < 250 && feature.properties.CO2 === 50)
             return true;
@@ -138,7 +139,7 @@
     }
 
     function celciusLayerFilter2(feature) {
-		if (feature == undefined || !feature.properties.hasAttribute("Temperature") || !feature.properties.hasAttribute("CO2") || !feature.properties.hasAttribute("Lux"))
+		if (feature == undefined || feature.properties === undefined  || feature.properties.Temperature ===  undefined || !feature.properties.CO2 ===  undefined  || !feature.properties.Lux ===  undefined)
             return false;
         if (feature.geometry.type !== "Point")
             return false;

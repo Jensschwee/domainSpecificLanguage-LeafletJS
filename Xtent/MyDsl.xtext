@@ -71,11 +71,11 @@ Transform:
 ;
 
 Layer:
-	'layer' name=ID 'from' datasource=[DataSource] '{' filter+=Filter (filter+=Filter)*'}'
+	'layer' name=ID 'from' datasource=[DataSource] ('{' filter+=Filter*'}')?
 ;
 
 Filter:
-	'filter' (style=[Styling])? ('type' mapType=MapType)? 'where' expression=Disjunction
+	'filter' (style=[Styling])?  ('type' mapType=MapType)?  ('where' expression=Disjunction)?
 ;
 
 MapType:

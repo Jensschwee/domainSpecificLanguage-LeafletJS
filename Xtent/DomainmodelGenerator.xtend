@@ -183,7 +183,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateCSSElement(LineWidth style) 
 	'''
-		style["weight"] = "«style.value»px";
+		style["weight"] = «style.value»;
 	'''
 	
 	def dispatch generateCSSElement(BackgroundColor style) 

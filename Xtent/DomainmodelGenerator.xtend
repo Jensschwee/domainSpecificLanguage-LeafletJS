@@ -90,6 +90,7 @@ import org.example.domainmodel.services.DomainmodelGrammarAccess.MathFactorEleme
 import org.example.domainmodel.domainmodel.Value
 import org.example.domainmodel.domainmodel.Filter
 import org.example.domainmodel.domainmodel.CSSStyle
+import org.example.domainmodel.domainmodel.LineOpacity
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -192,7 +193,12 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateCSSElement(BackgroundOpacity style) 
 	'''
-		style["opacity"] = "«style.value»%";
+		style["fillOpacity"] = «style.value/100.0»;
+	'''
+	
+	def dispatch generateCSSElement(LineOpacity style) 
+	'''
+		style["opacity"] = «style.value/100.0»;
 	'''
 	
 	def dispatch generateCSSElement(PointerIcon style) 
@@ -220,7 +226,6 @@ class DomainmodelGenerator extends AbstractGenerator {
 			«ENDIF»
 		«ENDFOR»
 	«ENDIF»
-	
 	'''
 	
 	def generateFilterExpression(LogicExpression expression)'''
@@ -454,12 +459,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''
 	
 	def generateCustumPointIcon(Filter filter)'''
-	«var makerName = filter.style.findIconStyle»
-	«IF makerName !== null»
-	,
-			    pointToLayer: function(feature, latlng) {
-			        return L.marker(latlng, { icon: getIcon«makerName»() });
-			    }
+	«IF filter.style != null»
+		«var makerName = filter.style.findIconStyle»
+		«IF makerName !== null»
+		,
+				    pointToLayer: function(feature, latlng) {
+				        return L.marker(latlng, { icon: getIcon«makerName»() });
+				    }
+		«ENDIF»
 	«ENDIF»
 	'''
 	

@@ -35,7 +35,7 @@ Styling:
 ;
 
 CSSStyle:
-	LineColor | LineWidth | BackgroundColor | BackgroundOpacity | PointerIcon
+	LineColor | LineWidth | BackgroundColor | BackgroundOpacity | PointerIcon | LineOpacity
 ;
 
 PointerIcon:
@@ -64,6 +64,10 @@ LineWidth:
 
 LineColor:
 	'lineColor' value=ID | hex=HEXCOLOR
+;
+
+LineOpacity:
+	'lineOpacity' value=INT '%'
 ;
 
 Transform:

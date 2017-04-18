@@ -7,39 +7,47 @@ map worldmap startZoom 4 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn tr
           
 source json Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson" {
 	variable mag
+	variable tsunami
+	variable magType
+	variable cdi
+	variable alert
+	variable status
+	variable sig
+	variable net
 }
 
 transform DobbelRigMag mag value * 2
+transform _4DobbelRigMag mag DobbelRigMag * 2 + 11/3
+
+layer AllEQ from Earthquakes{
+	filter EQStyle
+}
 
 layer BigEQ from Earthquakes {
-	filter BigEqStyle where DobbelRigMag > 3.5
+	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
+	filter EQStyle where mag > 5.0 and magType = "mwr" and (sig > 100 or cdi != 2.0)
 }
 
-layer MidiumEQ from Earthquakes {
-	filter MidiumEQStyle where mag > 2.5 and mag < 3.4
+layer Tsunamis from Earthquakes {
+	filter TsunamiStyle where tsunami = true
 }
 
-layer SmallEQ from Earthquakes {
-	filter SmallEQStyle where MagMulti < 2.5
+style TsunamiStyle{
+	pointerIcon iconTsunami
 }
 
-style MidiumEQStyle{
-	pointerIcon iconMidiumEQ
-}
-
-style BigEqStyle{
+style BigEqStyle: EQStyle{
 	pointerIcon iconBigEQ
 }
 
-style SmallEQStyle{
-	pointerIcon iconBigEQ
+style EQStyle{
+	pointerIcon iconAll
 }
 
 icon iconBigEQ size 16 source "http://embed.widencdn.net/img/americanredcross/8acomfees0/486x486px/mobile-app-earthquake.jpg?keep=c&quality=100&u=r5akkb"
-icon iconMidiumEQ size 16 source "http://res.cloudinary.com/dk-find-out/image/upload/q_80,w_160/Earthquake-icon_npnjt2.png"
-icon iconSmallEQ size 16 source "http://www.mapofearthquakes.com/img/EarthQuakeIcon1.png"
-
+icon iconTsunami  size 16 source "https://d30y9cdsu7xlg0.cloudfront.net/png/4251-200.png"
+icon iconAll size 20 source "https://cdn3.iconfinder.com/data/icons/earthquake/500/earthquake-24-512.png"
 
 button toggles BigEQ iconBigEQ location bottomRight
-button toggles MidiumEQ iconMidiumEQ location bottomRight
-button toggles SmallEQ iconSmallEQ location bottomRight
+button toggles Tsunamis iconTsunami location bottomRight
+button toggles AllEQ iconAll location bottomRight

@@ -134,9 +134,9 @@ class DomainmodelGenerator extends AbstractGenerator {
 		
 		«generateStaticHTMLBODY()»
 		
-		«generateMaps(model.map)»
+			«generateMaps(model.map)»
 		
-		«generateModelItem(model.modelItems)»
+			«generateModelItem(model.modelItems)»
 		
 		«generateStatickFooter()»'''
 	
@@ -148,17 +148,17 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateModelItemMember(Icon icon) '''
 	function getIcon«icon.name»() {
-	        return L.icon({
-	            iconUrl: '«icon.source»',
-	            iconSize: [«icon.size», «icon.size»]
-	        });
-	    }
+	    return L.icon({
+	        iconUrl: '«icon.source»',
+	        iconSize: [«icon.size», «icon.size»]
+	    });
+	}
 	    
 	function getEasybuttonImage«icon.name»() {
-	var height = «icon.size»;
-	var width = «icon.size»;
-	var imageSrc = '«icon.source»';
-	return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+		var height = «icon.size»;
+		var width = «icon.size»;
+		var imageSrc = '«icon.source»';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
 	}
 	'''
 	
@@ -169,54 +169,58 @@ class DomainmodelGenerator extends AbstractGenerator {
 		«ELSE»
 			var style = {};
 		«ENDIF»
-	        «FOR styleElement : style.getStyles»
-	        «generateCSSElement(styleElement)»
-	        «ENDFOR»
-	        return style;
-	    }
+	«FOR styleElement : style.getStyles»	«generateCSSElement(styleElement)»
+    «ENDFOR»
+		return style;
+	}
 	'''
 	
-	def dispatch generateCSSElement(LineColor style) '''
-	style["color"] = "«style.value»";
+	def dispatch generateCSSElement(LineColor style) 
+	'''
+		style["color"] = "«style.value»";
 	'''
 	
-	def dispatch generateCSSElement(LineWidth style) '''
-	style["weight"] = "«style.value»px";
+	def dispatch generateCSSElement(LineWidth style) 
+	'''
+		style["weight"] = "«style.value»px";
 	'''
 	
-	def dispatch generateCSSElement(BackgroundColor style) '''
-	style["fillColor"] = "«style.color»";
+	def dispatch generateCSSElement(BackgroundColor style) 
+	'''
+		style["fillColor"] = "«style.color»";
 	'''
 	
-	def dispatch generateCSSElement(BackgroundOpacity style) '''
-	style["opacity"] = "«style.value»%";
+	def dispatch generateCSSElement(BackgroundOpacity style) 
+	'''
+		style["opacity"] = "«style.value»%";
 	'''
 	
-	def dispatch generateCSSElement(PointerIcon style) '''
-	style["pointerIcon"] = getIcon«style.icon.name»();
+	def dispatch generateCSSElement(PointerIcon style) 
+	'''
+		style["pointerIcon"] = getIcon«style.icon.name»();
 	'''
 	
 	def dispatch generateModelItemMember(Layer layer) '''
+	«IF layer.filter.size() !== 0»
+		«state.setCounter(1)»
+		«FOR filter : layer.filter»
+			«IF filter.expression !== null»
+				«var variabels =  filter.expression.findVariabelsForFilter»
+				function layer«layer.name»Filter«state.counter»(feature) {
+				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties.«str» === undefined «ENDFOR»)
+				            return false;
+				            «IF(filter.mapType !== null)»
+				            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
+				                        return false;
+				            «ENDIF»
+				         «filter.expression.generateFilterExpression»   
+				        return false;
+				}
+				«state.setCounter(state.counter + 1)»
+			«ENDIF»
+		«ENDFOR»
+	«ENDIF»
 	
-	
-	«state.setCounter(1)»
-	 
-	«FOR filter : layer.filter»
-		«IF filter.expression !== null»
-			«var variabels =  filter.expression.findVariabelsForFilter»
-			function layer«layer.name»Filter«state.counter»(feature) {
-			        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties.«str» === undefined «ENDFOR»)
-			            return false;
-			            «IF(filter.mapType !== null)»
-			            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
-			                        return false;
-			            «ENDIF»
-			         «filter.expression.generateFilterExpression»   
-			        return false;
-			}
-			«state.setCounter(state.counter + 1)»
-		«ENDIF»
-	«ENDFOR»
 	'''
 	
 	def generateFilterExpression(LogicExpression expression)'''
@@ -312,8 +316,8 @@ class DomainmodelGenerator extends AbstractGenerator {
 		con.right.findVariable(variabels);
 	}
 	
-	def dispatch generateModelItemMember(Button button) '''
-	«generateButton(button.btn)»
+	def dispatch generateModelItemMember(Button button) 
+	'''«generateButton(button.btn)»
 	'''
 	
 	def findTransformVariables(Transform transform, Set<String> variabels)
@@ -347,33 +351,32 @@ class DomainmodelGenerator extends AbstractGenerator {
 			mat.transform.findTransformVariables(variabels);
 	}
 	
-	def generateButton(ToggleButton buttons)'''
-	var toogle«buttons.layer.name» = L.easyButton({
-	        id: 'easy-button',
-	        position: '«generateLocation(buttons.location)»',
-	        states: [{
-	                icon: getEasybuttonImage«buttons.icon.name»(),
-	                stateName: 'toggled',
-	                title: '«buttons.layer.name»',
-	                onClick: function (btn) {
-	                    btn.state('detoggled');
-	                    btn.button.style.backgroundColor = 'white';
-	                    «state.mapName».removeLayer(layer«buttons.layer.name»);
-	                }
-	            },
-	            {
-	                icon: getEasybuttonImage«buttons.icon.name»(),
-	                stateName: 'detoggled',
-	                title: '«buttons.layer.name»',
-	                onClick: function (btn) {
-	                    btn.state('toggled');
-	                    btn.button.style.backgroundColor = 'grey';
-	                    «state.mapName».addLayer(layer«buttons.layer.name»);
-	                }
-	            }
-	        ]
-	    }).addTo(«state.mapName»);
-	    toogle«buttons.layer.name».button.style.backgroundColor = 'grey';
+	def generateButton(ToggleButton buttons)'''		
+		var toogle«buttons.layer.name» = L.easyButton({
+	id: 'easy-button',
+    position: '«generateLocation(buttons.location)»',
+    states: [{
+        icon: getEasybuttonImage«buttons.icon.name»(),
+        stateName: 'toggled',
+        title: '«buttons.layer.name»',
+        onClick: function (btn) {
+        	btn.state('detoggled');
+            btn.button.style.backgroundColor = 'white';
+            «state.mapName».removeLayer(layer«buttons.layer.name»);
+        }
+    },
+	{
+        icon: getEasybuttonImage«buttons.icon.name»(),
+        stateName: 'detoggled',
+        title: '«buttons.layer.name»',
+        onClick: function (btn) {
+					btn.state('toggled');
+					btn.button.style.backgroundColor = 'grey';
+					«state.mapName».addLayer(layer«buttons.layer.name»);
+				}
+			}]
+		}).addTo(«state.mapName»);
+		toogle«buttons.layer.name».button.style.backgroundColor = 'grey';
 	'''
 	
 	def dispatch generateLocation(TOPRIGHT location) '''topright'''
@@ -411,58 +414,52 @@ class DomainmodelGenerator extends AbstractGenerator {
 			var layer«l.name» = null;
 		«ENDFOR»
 	«ENDIF»
-    loadJSON("«dataSoruce.getSourceLocation»",
-        (function (data) {
-            «dataSoruce.name» = JSON.parse(data);
+	loadJSON("«dataSoruce.getSourceLocation»",
+		(function (data) {
+        «dataSoruce.name» = JSON.parse(data);
             «FOR l : layers»
 				«IF l.filter.size() !== 0»
 	        		«IF l.filter.get(0).expression !== null»
-	        			«IF l.filter.get(0).style !== null»
-	        			layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»
-	        					layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»});
+	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»		});
+	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
 	        			«ENDIF»
 	        		«ELSE»
-	        			«IF l.filter.get(0).style !== null»
-	        					layer«l.name» = L.geoJson(«l.datasource.name», { style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»
-	        					layer«l.name» = L.geoJson(«l.datasource.name» «l.filter.get(0).generateCustumPointIcon»);
+	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»		});
+	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name» «l.filter.get(0).generateCustumPointIcon»);
 	        			«ENDIF»
 	        		«ENDIF»
             	«ELSE»
-            		layer«l.name» = L.geoJson(«l.datasource.name»,{ «l.filter.get(0).generateCustumPointIcon»});
+				layer«l.name» = L.geoJson(«l.datasource.name»);
             	«ENDIF»
             	«state.counter = 0»
-            	«FOR filter : l.filter»
-            	«IF state.counter != 0»
-            		«IF filter.expression !== null»
-            			«IF filter.style !== null»
-				L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-            				«ELSE»
-            					L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-            			«ENDIF»
-            		«ELSE»
-            			«IF filter.style !== null»
-            					L.geoJson(«l.datasource.name», {style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-            				«ELSE»
-            					L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»});
-            			«ENDIF»
-            		«ENDIF»
+            	«IF l.filter.size() !== 0»
+	            	«FOR filter : l.filter»
+		            	«IF state.counter != 0»
+		            		«IF filter.expression !== null»
+		            			«IF filter.style !== null»	L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
+		            			«ELSE»	L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
+		            			«ENDIF»
+		            		«ELSE»
+		            			«IF filter.style !== null»	L.geoJson(«l.datasource.name», {style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
+		            			«ELSE»	L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»		});
+		            			«ENDIF»
+		            		«ENDIF»
+		            	«ENDIF»
+		            	«state.setCounter(state.counter + 1)»
+	            	«ENDFOR»
             	«ENDIF»
-            	«state.setCounter(state.counter + 1)»
-            	«ENDFOR»
-            	layer«l.name».addTo(«state.mapName»);
-			«ENDFOR»  
-    }));
+						layer«l.name».addTo(«state.mapName»);
+			«ENDFOR»
+	}));
 	'''
 	
 	def generateCustumPointIcon(Filter filter)'''
 	«var makerName = filter.style.findIconStyle»
 	«IF makerName !== null»
 	,
-    pointToLayer: function(feature, latlng) {
-        return L.marker(latlng, { icon: getIcon«makerName»() });
-    }
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIcon«makerName»() });
+			    }
 	«ENDIF»
 	'''
 	
@@ -490,31 +487,33 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	
 	
-	def generateStaticHTMLBODY() '''
-	</head>
+	def generateStaticHTMLBODY() 
+	'''
+		</head>
 		<body>
 		    <div id="map">
 		    </div>
 		</body>
 		<script>
 		    function loadJSON(url, callback) {
-		            var xobj = new XMLHttpRequest();
-		            xobj.overrideMimeType("application/javascipt");
-		            //xobj.responseType = 'jsonp';
-		            xobj.open('GET', url, true);
-		            xobj.onreadystatechange = function () {
-		                if (xobj.readyState == 4 && xobj.status == "200") {
-		                    // .open will NOT return a value but simply returns undefined in async mode so use a callback
-		                    //console.log(JSON.parse(xobj.responseText));
-		                    //return xobj.responseText;
-		                   callback(xobj.responseText);
-		                }
-		            }
-		            xobj.send(null);
-		        }
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/javascipt");
+            //xobj.responseType = 'jsonp';
+            xobj.open('GET', url, true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // .open will NOT return a value but simply returns undefined in async mode so use a callback
+                    //console.log(JSON.parse(xobj.responseText));
+                    //return xobj.responseText;
+                   callback(xobj.responseText);
+                }
+            }
+            xobj.send(null);
+        }
 	'''
 	
-	def generateStatickFooter() ''' 
+	def generateStatickFooter() 
+	''' 
 		</script>
 	</html>
 	'''
@@ -594,44 +593,39 @@ class DomainmodelGenerator extends AbstractGenerator {
 	draggable :  «printBOOLEAN(s.inactive)»
 	'''
 	
-	def generateMapOptinalStartZoom(Map map)'''
-		«var startZoom = map.optinals.filter(typeof(StartZoom))»
-		«IF(!startZoom.nullOrEmpty)»
-		«startZoom.get(0).zoom»
-		«ENDIF»
-	'''
+	def generateMapOptinalStartZoom(Map map)
+	'''«var startZoom = map.optinals.filter(typeof(StartZoom))»«IF(!startZoom.nullOrEmpty)»«startZoom.get(0).zoom»«ENDIF»'''
 		
 	def generateStaticHeader()'''
 	<!DOCTYPE html>
-		<html xmlns="http://www.w3.org/1999/xhtml">
-		<head>
-			<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
-		    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
-			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-			<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-		    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
-			<title>Leaflet DSL</title>
-		    <style type="text/css">
-		        html, body {
-		            height: 100%;
-		            margin: 0;
-		        }
-		        #map {
-		            min-height: 100%;
-		        }
-			</style>
+	<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+	    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+		<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+	    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
+		<title>Leaflet DSL</title>
+	    <style type="text/css">
+	        html, body {
+	            height: 100%;
+	            margin: 0;
+	        }
+	        #map {
+	            min-height: 100%;
+	        }
+		</style>
 	'''
 	
-	def generateInclude(List<Include> includes) '''
-	«FOR i : includes»
-		«generateIncludeMember(i)»
-	«ENDFOR»
+	def generateInclude(List<Include> includes) 
+	'''«FOR i : includes»	«generateIncludeMember(i)»«ENDFOR»
 	'''
 	
-	def dispatch generateIncludeMember(Script s) '''
+	def dispatch generateIncludeMember(Script s) 
+	'''
 	<script src="«s.source»"></script>
 	'''
 	def dispatch generateIncludeMember(Style s) '''
-    <link rel="stylesheet" href="«s.source»" />
+	<link rel="stylesheet" href="«s.source»" />
 	'''
 }

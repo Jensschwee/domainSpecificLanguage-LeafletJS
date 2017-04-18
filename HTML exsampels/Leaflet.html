@@ -1,222 +1,270 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <!--CSS-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
-
-    <!--JS-->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-    <title>Leaflet DSL</title>
-    <!-- Default style -->
+	<title>Leaflet DSL</title>
     <style type="text/css">
         html, body {
             height: 100%;
             margin: 0;
         }
-
         #map {
             min-height: 100%;
         }
-    </style>
-</head>
+	</style>
 
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="../myJs.js"></script>
+
+</head>
 <body>
     <div id="map">
     </div>
 </body>
-
 <script>
-   function loadJSON(url, callback) {
-        var xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/javascipt");
-        //xobj.responseType = 'jsonp';
-        xobj.open('GET', url, true);
-        xobj.onreadystatechange = function () {
-            if (xobj.readyState == 4 && xobj.status == "200") {
-                // .open will NOT return a value but simply returns undefined in async mode so use a callback
-                //console.log(JSON.parse(xobj.responseText));
-                //return xobj.responseText;
-               callback(xobj.responseText);
+    function loadJSON(url, callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/javascipt");
+            //xobj.responseType = 'jsonp';
+            xobj.open('GET', url, true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // .open will NOT return a value but simply returns undefined in async mode so use a callback
+                    //console.log(JSON.parse(xobj.responseText));
+                    //return xobj.responseText;
+                   callback(xobj.responseText);
+                }
             }
+            xobj.send(null);
         }
-        xobj.send(null);
-    }
 
-    var WorldMap = L.map('map',
-    {
-        zoomControl: false
-    }).setView([38.79930767201779,-77.12911152370515], 12);
-
-    var OU44_1 = null;
-    loadJSON("https://www.mapbox.com/help/data/stations.geojson",
-        (function (data) {
-			console.log(data)
-            OU44_1 = JSON.parse(data);
-        }));
-
-    var OU44 = null;
-	var layercelciusLayer = null
-    loadJSON("https://www.mapbox.com/help/data/stations.geojson",
-        (function (data) {
-            OU44 = JSON.parse(data);
-			layercelciusLayer = L.geoJson(OU44, { filter: celciusLayerFilter1, style: stylecoolStyle });
-			L.geoJson(OU44, { filter: celciusLayerFilter2, style: stylecoolStyle }).addTo(layercelciusLayer);
-			layercelciusLayer.addTo(WorldMap);
-        }));
-
-    L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        minZoom: 0,
-        maxZoom: 19,
-        maxNativeZoom: 22,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-        attribution: 'Map data &copy; Google maps</a>'
-    }).addTo(WorldMap);
-
-    function transformCelciusToFahrenheit(value) {
-        return value * 9 / 5 + 9 / 5 * 32;
-    }
-
-    function transformFahrenheitToCelcius(value) {
-        return transformCelciusToFahrenheit(value) * value + 1 / 5 + 32 + 3 + 34 * 2;
-    }
-
-    function geticonTemputur() {
-        return L.icon({
-            iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png',
-            iconSize: [5, 5]
-        });
-    }
-
-    function getEasybuttonImageiconTemputur() {
-        var height = 5;
-        var width = 5;
-        var imageSrc = 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png';
-        return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>'; 
-    }
-
-    function geticonTemputur1() {
-        return L.icon({
-            iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png',
-            iconSize: [7, 7]
-        });
-    }
-
-    function getEasybuttonImageiconTemputur1() {
-        var height = 7;
-        var width = 7;
-        var imageSrc = 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png';
-        return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
-    }
-
-    var layerfahrenheitLayer = L.geoJson(OU44_1, { filter: layerfahrenheitLayerFilter1, style: stylecoolStyle });
-    layerfahrenheitLayer.addTo(WorldMap);
-
-    function layerfahrenheitLayerFilter1(feature) {
-		if (feature == undefined || feature.properties === undefined  || feature.properties.Temperature ===  undefined || !feature.properties.Motion ===  undefined)
-		return false;
-        if (transformCelciusToFahrenheit(feature.properties.Temperature > 50 && feature.properties.Motion !== 0))
-            return true;
-        return false;
-    }
+	var FF = L.map('map', {
+		zoomControl :  true 
+	}).setView([38.800425, -77.7], 12);
 	
-    function celciusLayerFilter1(feature) {
-        if (feature == undefined || feature.properties === undefined || !(feature.properties.hasOwnProperty("Temperature")) || !feature.properties.hasOwnProperty("Motion") || !feature.properties.hasOwnProperty("CO2"))
-            return false;
-        if (feature.geometry.type !== "Point")
-            return false;
-        if (feature.properties.Temperature < 250 && feature.properties.CO2 === 50)
-            return true;
-        if (feature.properties.Lux > 50)
-            return true;
-        return false;
-    }
+	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	 		 minZoom : 1,
+	 		 maxZoom : 19,
+	 		 maxNativeZoom : 22
+	}).addTo(FF);
 
-    function celciusLayerFilter2(feature) {
-		if (feature == undefined || feature.properties === undefined  || feature.properties.Temperature ===  undefined || !feature.properties.CO2 ===  undefined  || !feature.properties.Lux ===  undefined)
-            return false;
-        if (feature.geometry.type !== "Point")
-            return false;
-        if (feature.properties.Temperature < 250 && feature.properties.CO2 === 50)
-            return true;
-        if (feature.properties.Lux > 50)
-            return true;
-        return false;
-    }
-    
-    function styledefaultStyle() {
-        var style = {};
-        style["color"] = "red";
-        style["opacity"] = "90%";
-        style["weight"] = "1px";
-        return style;
-    }
+	var a = null;
+	var layerorangeLine = null;
+	loadJSON("https://www.mapbox.com/help/data/stations.geojson",
+		(function (data) {
+	        a = JSON.parse(data);
+			layerorangeLine = L.geoJson(a, { filter: layerorangeLineFilter1, style: styledefaultStyle 		});
+			layerorangeLine.addTo(FF);
+	}));
+	var OU44_1 = null;
+	var layerblueLine = null;
+	var layeryellowLine = null;
+	var layergreenLine = null;
+	loadJSON("https://www.mapbox.com/help/data/stations.geojson",
+		(function (data) {
+	        OU44_1 = JSON.parse(data);
+			layerblueLine = L.geoJson(OU44_1, { filter: layerblueLineFilter1, style: styledefaultStyle 		});
+			layerblueLine.addTo(FF);
+			layeryellowLine = L.geoJson(OU44_1, { filter: layeryellowLineFilter1, style: styledefaultStyle 		});
+			layeryellowLine.addTo(FF);
+			layergreenLine = L.geoJson(OU44_1, { filter: layergreenLineFilter1, style: stylecoolStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconTemputur() });
+			    }
+			});
+			layergreenLine.addTo(FF);
+	}));
+	function transformCelciusToFahrenheit(value) {
+		return ((((value*1)/5)+((9/5)*32))+(2.2*0.5));
+	}
+	function transformFahrenheitToCelcius(value) {
+		return (((((transformCelciusToFahrenheit(value)*value)+(1/5))+32)+3)+(34*2));
+	}
+	function layerorangeLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "orange")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	
+	function layerblueLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "blue")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	
+	function layeryellowLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "yellow")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	
+	function layergreenLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "green")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	
+	function getIconiconTemputur() {
+	    return L.icon({
+	        iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png',
+	        iconSize: [5, 5]
+	    });
+	}
+	    
+	function getEasybuttonImageiconTemputur() {
+		var height = 5;
+		var width = 5;
+		var imageSrc = 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconTemputur1() {
+	    return L.icon({
+	        iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconTemputur1() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function styledefaultStyle() {
+		var style = {};
+		style["color"] = "red";
+		style["weight"] = "2px";
+		style["fillColor"] = "red";
+		style["opacity"] = "90%";
+		return style;
+	}
+	function stylecoolStyle() {
+		var style = styledefaultStyle();
+		style["fillColor"] = "blue";
+		style["pointerIcon"] = getIconiconTemputur();
+		return style;
+	}
+	var toogleblueLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconTemputur(),
+	        stateName: 'toggled',
+	        title: 'blueLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            FF.removeLayer(layerblueLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconTemputur(),
+	        stateName: 'detoggled',
+	        title: 'blueLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				FF.addLayer(layerblueLine);
+			}
+		}]
+	}).addTo(FF);
+	toogleblueLine.button.style.backgroundColor = 'grey';
+	var toogleyellowLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconTemputur(),
+	        stateName: 'toggled',
+	        title: 'yellowLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            FF.removeLayer(layeryellowLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconTemputur(),
+	        stateName: 'detoggled',
+	        title: 'yellowLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				FF.addLayer(layeryellowLine);
+			}
+		}]
+	}).addTo(FF);
+	toogleyellowLine.button.style.backgroundColor = 'grey';
+	var tooglegreenLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'topleft',
+	    states: [{
+	        icon: getEasybuttonImageiconTemputur1(),
+	        stateName: 'toggled',
+	        title: 'greenLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            FF.removeLayer(layergreenLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconTemputur1(),
+	        stateName: 'detoggled',
+	        title: 'greenLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				FF.addLayer(layergreenLine);
+			}
+		}]
+	}).addTo(FF);
+	tooglegreenLine.button.style.backgroundColor = 'grey';
+	var toogleorangeLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'topleft',
+	    states: [{
+	        icon: getEasybuttonImageiconTemputur1(),
+	        stateName: 'toggled',
+	        title: 'orangeLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            FF.removeLayer(layerorangeLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconTemputur1(),
+	        stateName: 'detoggled',
+	        title: 'orangeLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				FF.addLayer(layerorangeLine);
+			}
+		}]
+	}).addTo(FF);
+	toogleorangeLine.button.style.backgroundColor = 'grey';
 
-    function stylecoolStyle() {
-        var style = styledefaultStyle();
-        style["fillColor"] = "blue";
-        style["pointerIcon"] = geticonTemputur();
-        return style;
-    }
-
-    var tooglecelciusLayer = L.easyButton({
-        id: 'easy-button',
-        states: [{
-                icon: getEasybuttonImageiconTemputur(),
-                stateName: 'toggled',
-                title: 'celciusLayer',
-                onClick: function (btn) {
-                    btn.state('detoggled');
-                    btn.button.style.backgroundColor = 'white';
-                    WorldMap.removeLayer(layercelciusLayer);
-                }
-            },
-            {
-                icon: getEasybuttonImageiconTemputur(),
-                stateName: 'detoggled',
-                title: 'celciusLayer',
-                onClick: function (btn) {
-                    btn.button.style.backgroundColor = 'grey';
-                    btn.state('toggled');
-                    WorldMap.addLayer(layercelciusLayer);
-                }
-            }
-        ],
-        position: 'topright'
-    }).addTo(WorldMap);
-    tooglecelciusLayer.button.style.backgroundColor = 'grey';
-
-    var tooglecelciusLayer = L.easyButton({
-        id: 'easy-button',
-        position: 'bottomright',
-        states: [{
-                icon: getEasybuttonImageiconTemputur1(),
-                stateName: 'toggled',
-                title: 'fahrenheitLayer',
-                onClick: function (btn) {
-                    btn.state('detoggled');
-                    btn.button.style.backgroundColor = 'white';
-                    WorldMap.removeLayer(layerfahrenheitLayer);
-                }
-            },
-            {
-                icon: getEasybuttonImageiconTemputur1(),
-                stateName: 'detoggled',
-                title: 'fahrenheitLayer',
-                onClick: function (btn) {
-                    btn.state('toggled');
-                    btn.button.style.backgroundColor = 'grey';
-                    WorldMap.addLayer(layerfahrenheitLayer);
-                }
-            }
-        ]
-    }).addTo(WorldMap);
-    tooglecelciusLayer.button.style.backgroundColor = 'grey';
-</script>
+	</script>
 </html>

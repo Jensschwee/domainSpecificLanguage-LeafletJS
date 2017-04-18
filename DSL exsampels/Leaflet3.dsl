@@ -9,21 +9,37 @@ source json Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summa
 	variable mag
 }
 
+transform DobbelRigMag mag value * 2
+
 layer BigEQ from Earthquakes {
-	filter where mag > 3.5
+	filter BigEqStyle where DobbelRigMag > 3.5
 }
 
 layer MidiumEQ from Earthquakes {
-	filter where mag > 2.5 and mag < 3.4
+	filter MidiumEQStyle where mag > 2.5 and mag < 3.4
 }
 
 layer SmallEQ from Earthquakes {
-	filter where mag < 2.5
+	filter SmallEQStyle where MagMulti < 2.5
 }
 
-icon iconAfghanistan size 16 source "https://www.iconexperience.com/_img/v_collection_png/32x32/shadow/flag_afghanistan.png"
-icon iconDenmark size 16 source "https://www.iconfinder.com/icons/96204/download/ico"
+style MidiumEQStyle{
+	pointerIcon iconMidiumEQ
+}
 
-button toggles BigEQ iconAfghanistan location bottomRight
-button toggles MidiumEQ iconAfghanistan location bottomRight
-button toggles SmallEQ iconAfghanistan location bottomRight
+style BigEqStyle{
+	pointerIcon iconBigEQ
+}
+
+style SmallEQStyle{
+	pointerIcon iconBigEQ
+}
+
+icon iconBigEQ size 16 source "http://embed.widencdn.net/img/americanredcross/8acomfees0/486x486px/mobile-app-earthquake.jpg?keep=c&quality=100&u=r5akkb"
+icon iconMidiumEQ size 16 source "http://res.cloudinary.com/dk-find-out/image/upload/q_80,w_160/Earthquake-icon_npnjt2.png"
+icon iconSmallEQ size 16 source "http://www.mapofearthquakes.com/img/EarthQuakeIcon1.png"
+
+
+button toggles BigEQ iconBigEQ location bottomRight
+button toggles MidiumEQ iconMidiumEQ location bottomRight
+button toggles SmallEQ iconSmallEQ location bottomRight

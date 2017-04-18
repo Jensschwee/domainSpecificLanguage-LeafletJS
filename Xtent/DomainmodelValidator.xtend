@@ -25,6 +25,8 @@ import org.eclipse.emf.ecore.EClass
 import org.example.domainmodel.domainmodel.DomainmodelPackage
 import org.example.domainmodel.domainmodel.DataSource
 import org.example.domainmodel.domainmodel.Value
+import org.example.domainmodel.domainmodel.Style
+import org.example.domainmodel.domainmodel.Styling
 
 class StateClass {  
     @Property
@@ -148,8 +150,35 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	}
 	
 	@Check
-	def addTransformToList(Transform transform) {
+	def checkTransform(Transform transform) {
 		state.transforms.add(transform);
+		
+	}
+	
+	@Check
+	def checkStyling(Styling styling) {
+		var stylings = new HashSet<String>();
+		stylings.add(styling.name);
+		if(styling.base !== null)
+		{
+			styling.base.checkSubStyle(stylings);
+		}
+	}
+	
+	def checkSubStyle(Styling styling, Set<String> stylings)
+	{
+		if(stylings.contains(styling.name))
+		{
+			error("Style may not have ciculare references Style: '" +  styling.name +"' have", DomainmodelPackage$Literals::STYLING__NAME);		 	 
+		}
+		else
+		{
+			stylings.add(styling.name);
+			if(styling.base !== null)
+			{
+				styling.base.checkSubStyle(stylings);
+			}
+		}
 	}
 	
 	@Check

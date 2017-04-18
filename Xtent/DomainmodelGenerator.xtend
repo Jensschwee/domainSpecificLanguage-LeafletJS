@@ -91,6 +91,11 @@ import org.example.domainmodel.domainmodel.Value
 import org.example.domainmodel.domainmodel.Filter
 import org.example.domainmodel.domainmodel.CSSStyle
 import org.example.domainmodel.domainmodel.LineOpacity
+import org.example.domainmodel.domainmodel.LINESTRING
+import org.example.domainmodel.domainmodel.MULTILINESTRING
+import org.example.domainmodel.domainmodel.MULTIPOINT
+import org.example.domainmodel.domainmodel.GEOMETRYCOLLECTION
+import org.example.domainmodel.domainmodel.MULTIPOLYGON
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -279,7 +284,12 @@ class DomainmodelGenerator extends AbstractGenerator {
 		
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
-		
+	def dispatch getMaptypeGenerate(LINESTRING type)'''LineString'''
+	def dispatch getMaptypeGenerate(MULTILINESTRING type)'''MultiLineString'''
+	def dispatch getMaptypeGenerate(MULTIPOINT type)'''MultiPoint'''
+	def dispatch getMaptypeGenerate(GEOMETRYCOLLECTION type)'''GeometryCollection'''
+	def dispatch getMaptypeGenerate(MULTIPOLYGON type)'''MultiPolygon'''
+	
 	def Set<String> findVariabelsForFilter(LogicExpression dis){
 		var variabels = new HashSet<String>();
 		dis.findVariable(variabels);

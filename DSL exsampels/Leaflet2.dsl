@@ -14,7 +14,7 @@ layer Afghanistan from TheWorld {
 }
 
 layer Denmark from TheWorld {
-	filter red where name = "Denmark"
+	filter red type multipolygon where name = "Denmark"
 }
 
 style defaultStyle {
@@ -27,6 +27,7 @@ style defaultStyle {
 style red : defaultStyle{
 	backgroundColor red	
 	backgroundOpacity 90%
+	lineWidth 5
 }
 
 icon iconAfghanistan size 16 source "https://www.iconexperience.com/_img/v_collection_png/32x32/shadow/flag_afghanistan.png"

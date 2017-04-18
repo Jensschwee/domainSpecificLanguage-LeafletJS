@@ -83,7 +83,7 @@ Filter:
 ;
 
 MapType:
-	{POINT}'point' | {POLYGON}'polygon'
+	{POINT}'point' | {POLYGON}'polygon' | {LINESTRING}'linestring' | {MULTILINESTRING}'multilinestring'  | {MULTIPOINT} 'multipoint' |{GEOMETRYCOLLECTION} 'geometrycollection'| {MULTIPOLYGON} 'multipolygon'
 ;
 
 MathTermSimple returns MathExp:

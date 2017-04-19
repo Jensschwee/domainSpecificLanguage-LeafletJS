@@ -13,9 +13,20 @@ layer Afghanistan from TheWorld {
 	filter defaultStyle where name = "Afghanistan"
 }
 
+layer EU from TheWorld {
+	filter blue where name = "Denmark" or name = "Ireland" or name = "Sweden" or name = "Germany" or name = "Poland" or name = "Luxembourg"
+	filter blue where name = "Finland" or name = "France" or name = "Spain" or name = "Greece" or name = "Netherlands" or name ="Malta"
+	filter blue where name = "Italy" or name = "Austria" or name = "Belgium" or name = "Bulgaria" or name = "Croatia" or name = "Cyprus"
+	filter blue where name = "Czech Republic" or name ="Estonia" or name ="Hungary" or name ="Latvia" or name ="Lithuania" or name = "Portugal"
+	filter blue where name = "Romania" or name ="Slovakia" or name = "Slovenia"
+	filter blueOpacityMax where name = "United Kingdom"
+}
+
 layer Denmark from TheWorld {
 	filter red type multipolygon where name = "Denmark"
 }
+
+
 
 style defaultStyle {
 	backgroundColor black	
@@ -25,13 +36,25 @@ style defaultStyle {
 }
 
 style red : defaultStyle{
-	backgroundColor red	
+	backgroundColor red
+	lineColor red
 	backgroundOpacity 90%
 	lineWidth 5
 }
 
+style blue : red{
+	backgroundColor blue
+	lineColor blue
+}
+
+style blueOpacityMax : blue{
+	backgroundOpacity 0%
+}
+
 icon iconAfghanistan size 16 source "https://www.iconexperience.com/_img/v_collection_png/32x32/shadow/flag_afghanistan.png"
 icon iconDenmark size 16 source "https://www.iconfinder.com/icons/96204/download/ico"
+icon iconEU size 20 source "https://cdn4.iconfinder.com/data/icons/flat-circle-flag/182/circle_flag_europe_eu-512.png"
 
 button toggles Afghanistan iconAfghanistan location bottomRight
 button toggles Denmark iconDenmark location bottomRight
+button toggles EU iconEU location topRight

@@ -7,18 +7,12 @@ include script "../myJs.js"
 map FF startZoom 12 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.800425 long -77.07 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           
 source json a "https://www.mapbox.com/help/data/stations.geojson" {
-	variable Temperature
-	variable CO2
-	variable Lux
+	variable line
 }
 
 source json OU44_1 "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line 
-	variable Motion
 }
-
-transform CelciusToFahrenheit CO2 value * 1/5 + 9/5 * 32+ 2.2*0.5
-transform FahrenheitToCelcius Temperature CelciusToFahrenheit * value + 1/5 + 32 + 3+ 34 * 2
 
 layer orangeLine from a {
 	filter defaultStyle where line = "orange"
@@ -48,7 +42,6 @@ style defaultStyle {
 
 style coolStyle : defaultStyle  {
 	backgroundColor blue
-	pointerIcon iconTemputur
 }
 
 button toggles blueLine iconTemputur location bottomRight

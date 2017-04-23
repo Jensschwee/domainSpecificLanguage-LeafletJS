@@ -215,7 +215,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	«IF layer.filter.size() !== 0»
 		«state.setCounter(1)»
 		«FOR filter : layer.filter»
-			«IF filter.expression !== null»
+			«IF filter.expression !== null »
 				«var variabels =  filter.expression.findVariabelsForFilter»
 				function layer«layer.name»Filter«state.counter»(feature) {
 				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties.«str» === undefined «ENDFOR»)
@@ -228,6 +228,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 				        return false;
 				}
 				«state.setCounter(state.counter + 1)»
+			«ELSEIF filter.mapType !== null»
+				 function layer«layer.name»Filter«state.counter»(feature) {
+				 				            «IF(filter.mapType !== null)»
+				 				            if (feature.geometry.type === "«filter.mapType.maptypeGenerate»")
+				 				                        return true;
+				 				            «ENDIF»
+				 				        return false;
+				 }
 			«ENDIF»
 		«ENDFOR»
 	«ENDIF»
@@ -405,7 +413,8 @@ class DomainmodelGenerator extends AbstractGenerator {
 	 }
 	'''
 	
-	def dispatch CharSequence generateTransformExp(MathOp exp)'''(«exp.left.generateTransformExp»«exp.op.generateTransformExp»«exp.right.generateTransformExp»)'''
+	def dispatch CharSequence generateTransformExp(MathOp exp)
+	'''(«exp.left.generateTransformExp»«exp.op.generateTransformExp»«exp.right.generateTransformExp»)'''
 	
 	def dispatch CharSequence generateTransformExp(MINUS op)'''-'''
 	def dispatch CharSequence generateTransformExp(PLUS op)'''+'''
@@ -438,6 +447,10 @@ class DomainmodelGenerator extends AbstractGenerator {
 	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»		});
 	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
 	        			«ENDIF»
+        			«ELSEIF l.filter.get(0).mapType !== null»	
+	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»		});
+	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
+	        			«ENDIF»
 	        		«ELSE»
 	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»		});
 	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name» «l.filter.get(0).generateCustumPointIcon»);
@@ -451,12 +464,16 @@ class DomainmodelGenerator extends AbstractGenerator {
 	            	«FOR filter : l.filter»
 		            	«IF state.counter != 0»
 		            		«IF filter.expression !== null»
-		            			«IF filter.style !== null»	L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
-		            			«ELSE»	L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
+		            			«IF filter.style !== null»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
+		            			«ELSE»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
+		            			«ENDIF»
+	            			«ELSEIF filter.mapType !== null»
+		            			«IF filter.style !== null»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
+		            			«ELSE»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»		}).addTo(layer«l.name»);
 		            			«ENDIF»
 		            		«ELSE»
-		            			«IF filter.style !== null»	L.geoJson(«l.datasource.name», {style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»	L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»		});
+		            			«IF filter.style !== null»		L.geoJson(«l.datasource.name», {style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
+		            			«ELSE»		L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»		});
 		            			«ENDIF»
 		            		«ENDIF»
 		            	«ENDIF»

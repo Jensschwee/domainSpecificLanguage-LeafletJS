@@ -130,7 +130,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	
 	@Check
 	def checkFilterDatasoruces(Filter filter) {
-		if(filter.expression !== null )
+		if(filter.expression != null )
 		{
 			var layer =	filter.eContainer() as Layer;
 			var variables =  filter.expression.findVariabelsForFilter;
@@ -169,7 +169,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	{
 		if(stylings.contains(styling.name))
 		{
-			error("Style may not have ciculare references Style: '" +  styling.name +"' have", DomainmodelPackage$Literals::STYLING__NAME);		 	 
+			error("Style may not have circular references Style: '" +  styling.name +"' have", DomainmodelPackage$Literals::STYLING__NAME);		 	 
 		}
 		else
 		{

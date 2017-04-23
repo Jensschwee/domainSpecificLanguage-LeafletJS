@@ -26,7 +26,9 @@ layer Denmark from TheWorld {
 	filter red type multipolygon where name = "Denmark"
 }
 
-
+layer Greenland from TheWorld {
+	filter green where name = "Greenland"
+}
 
 style defaultStyle {
 	backgroundColor black	
@@ -51,10 +53,16 @@ style blueOpacityMax : blue{
 	backgroundOpacity 0%
 }
 
+style green : defaultStyle{
+	backgroundColor green
+}
+
 icon iconAfghanistan size 16 source "https://www.iconexperience.com/_img/v_collection_png/32x32/shadow/flag_afghanistan.png"
 icon iconDenmark size 16 source "https://www.iconfinder.com/icons/96204/download/ico"
-icon iconEU size 20 source "https://cdn4.iconfinder.com/data/icons/flat-circle-flag/182/circle_flag_europe_eu-512.png"
+icon iconEU size 16 source "https://cdn4.iconfinder.com/data/icons/flat-circle-flag/182/circle_flag_europe_eu-512.png"
+icon iconGreenland size 16 source "http://icons.iconseeker.com/png/fullsize/rounded-world-flags/greenland-flag.png"
 
 button toggles Afghanistan iconAfghanistan location bottomRight
 button toggles Denmark iconDenmark location bottomRight
 button toggles EU iconEU location topRight
+button toggles Greenland iconGreenland location bottomLeft

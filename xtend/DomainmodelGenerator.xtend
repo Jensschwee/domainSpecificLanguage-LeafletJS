@@ -277,7 +277,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
 	
 	def dispatch CharSequence findSubExpression(LogicExp exp)
-	'''(«exp.left.findSubExpression»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression»)'''
+	'''«IF exp.op.equals("and")»(«ENDIF»«exp.left.findSubExpression»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression»«IF exp.op.equals("and")»)«ENDIF»'''
 	
 	def dispatch CharSequence findSubExpression(MathTerm exp)
 	{

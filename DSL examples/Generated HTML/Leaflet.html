@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
+	<title>Leaflet DSL</title>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            min-height: 100%;
+        }
+	</style>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <div id="map">
+    </div>
+</body>
+<script>
+    function loadJSON(url, callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/javascipt");
+            //xobj.responseType = 'jsonp';
+            xobj.open('GET', url, true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // .open will NOT return a value but simply returns undefined in async mode so use a callback
+                    //console.log(JSON.parse(xobj.responseText));
+                    //return xobj.responseText;
+                   callback(xobj.responseText);
+                }
+            }
+            xobj.send(null);
+        }
+
+	var worldmap = L.map('map', {
+		zoomControl :  true 
+	}).setView([38.8895, -76.9853], 11);
+	
+	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	 		 minZoom : 1,
+	 		 maxZoom : 19,
+	 		 maxNativeZoom : 22
+	}).addTo(worldmap);
+
+	var stations2 = null;
+	var layerorangeLine = null;
+	loadJSON("https://www.mapbox.com/help/data/stations.geojson",
+		(function (data) {
+	        stations2 = JSON.parse(data);
+			layerorangeLine = L.geoJson(stations2, { filter: layerorangeLineFilter1, style: styleOrangeStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconOrange() });
+			    }
+	});
+			layerorangeLine.addTo(worldmap);
+	}));
+	var stations = null;
+	var layerblueLine = null;
+	var layeryellowLine = null;
+	var layergreenLine = null;
+	loadJSON("https://www.mapbox.com/help/data/stations.geojson",
+		(function (data) {
+	        stations = JSON.parse(data);
+			layerblueLine = L.geoJson(stations, { filter: layerblueLineFilter1, style: styleBlueStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconBlue() });
+			    }
+	});
+			layerblueLine.addTo(worldmap);
+			layeryellowLine = L.geoJson(stations, { filter: layeryellowLineFilter1, style: styleYellowStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconYellow() });
+			    }
+	});
+			layeryellowLine.addTo(worldmap);
+			layergreenLine = L.geoJson(stations, { filter: layergreenLineFilter1, style: styleGreenStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconGreen() });
+			    }
+	});
+			layergreenLine.addTo(worldmap);
+	}));
+	function layerorangeLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "orange")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerblueLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "blue")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layeryellowLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "yellow")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layergreenLineFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	            return false;
+	         if(feature.properties.line == "green")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function getIconiconBlue() {
+	    return L.icon({
+	        iconUrl: 'http://www.freeiconspng.com/uploads/button-blank-blue-icon-6.png',
+	        iconSize: [10, 10]
+	    });
+	}
+	    
+	function getEasybuttonImageiconBlue() {
+		var height = 10;
+		var width = 10;
+		var imageSrc = 'http://www.freeiconspng.com/uploads/button-blank-blue-icon-6.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconYellow() {
+	    return L.icon({
+	        iconUrl: 'http://icons.iconarchive.com/icons/hopstarter/soft-scraps/256/Button-Blank-Yellow-icon.png',
+	        iconSize: [10, 10]
+	    });
+	}
+	    
+	function getEasybuttonImageiconYellow() {
+		var height = 10;
+		var width = 10;
+		var imageSrc = 'http://icons.iconarchive.com/icons/hopstarter/soft-scraps/256/Button-Blank-Yellow-icon.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconGreen() {
+	    return L.icon({
+	        iconUrl: 'https://www.mouserunner.com/Icons/Shiny_Things_Preview_icon.png',
+	        iconSize: [10, 10]
+	    });
+	}
+	    
+	function getEasybuttonImageiconGreen() {
+		var height = 10;
+		var width = 10;
+		var imageSrc = 'https://www.mouserunner.com/Icons/Shiny_Things_Preview_icon.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconOrange() {
+	    return L.icon({
+	        iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/46/Button_Icon_Orange.svg',
+	        iconSize: [10, 10]
+	    });
+	}
+	    
+	function getEasybuttonImageiconOrange() {
+		var height = 10;
+		var width = 10;
+		var imageSrc = 'https://upload.wikimedia.org/wikipedia/commons/4/46/Button_Icon_Orange.svg';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function styledefaultStyle() {
+		var style = {};
+		style["color"] = "red";
+		style["weight"] = 2;
+		style["fillColor"] = "red";
+		style["fillOpacity"] = 0.9;
+		return style;
+	}
+	function styleBlueStyle() {
+		var style = styledefaultStyle();
+		style["pointerIcon"] = getIconiconBlue();
+		return style;
+	}
+	function styleYellowStyle() {
+		var style = styledefaultStyle();
+		style["pointerIcon"] = getIconiconYellow();
+		return style;
+	}
+	function styleOrangeStyle() {
+		var style = styledefaultStyle();
+		style["pointerIcon"] = getIconiconOrange();
+		return style;
+	}
+	function styleGreenStyle() {
+		var style = styledefaultStyle();
+		style["pointerIcon"] = getIconiconGreen();
+		return style;
+	}
+	var toogleblueLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconBlue(),
+	        stateName: 'toggled',
+	        title: 'blueLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerblueLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconBlue(),
+	        stateName: 'detoggled',
+	        title: 'blueLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerblueLine);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleblueLine.button.style.backgroundColor = 'grey';
+	var toogleyellowLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconYellow(),
+	        stateName: 'toggled',
+	        title: 'yellowLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layeryellowLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconYellow(),
+	        stateName: 'detoggled',
+	        title: 'yellowLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layeryellowLine);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleyellowLine.button.style.backgroundColor = 'grey';
+	var tooglegreenLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'topleft',
+	    states: [{
+	        icon: getEasybuttonImageiconGreen(),
+	        stateName: 'toggled',
+	        title: 'greenLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layergreenLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconGreen(),
+	        stateName: 'detoggled',
+	        title: 'greenLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layergreenLine);
+			}
+		}]
+	}).addTo(worldmap);
+	tooglegreenLine.button.style.backgroundColor = 'grey';
+	var toogleorangeLine = L.easyButton({
+		id: 'easy-button',
+	    position: 'topleft',
+	    states: [{
+	        icon: getEasybuttonImageiconOrange(),
+	        stateName: 'toggled',
+	        title: 'orangeLine',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerorangeLine);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconOrange(),
+	        stateName: 'detoggled',
+	        title: 'orangeLine',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerorangeLine);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleorangeLine.button.style.backgroundColor = 'grey';
+
+	</script>
+</html>

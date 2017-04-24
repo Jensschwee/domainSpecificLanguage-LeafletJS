@@ -2,31 +2,30 @@ leaflet 1.0.3
 
 include style "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-include script "../myJs.js"
 
-map FF startZoom 12 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.800425 long -77.07 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          
-source json a "https://www.mapbox.com/help/data/stations.geojson" {
+map worldmap startZoom 11 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.8895 long -76.9853 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+source json stations2 "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line
 }
 
-source json OU44_1 "https://www.mapbox.com/help/data/stations.geojson" {
+source json stations "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line 
 }
 
-layer orangeLine from a {
+layer orangeLine from stations2 {
 	filter OrangeStyle where line = "orange"
 }
 
-layer blueLine from OU44_1{
+layer blueLine from stations{
 	filter BlueStyle where line = "blue"
 }
 
-layer yellowLine from OU44_1 {
+layer yellowLine from stations {
 	filter YellowStyle where line = "yellow"
 }
 
-layer greenLine from OU44_1 {
+layer greenLine from stations {
 	filter GreenStyle where line = "green"
 }
 

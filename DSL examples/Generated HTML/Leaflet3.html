@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
+	<title>Leaflet DSL</title>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            min-height: 100%;
+        }
+	</style>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <div id="map">
+    </div>
+</body>
+<script>
+    function loadJSON(url, callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/javascipt");
+            //xobj.responseType = 'jsonp';
+            xobj.open('GET', url, true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // .open will NOT return a value but simply returns undefined in async mode so use a callback
+                    //console.log(JSON.parse(xobj.responseText));
+                    //return xobj.responseText;
+                   callback(xobj.responseText);
+                }
+            }
+            xobj.send(null);
+        }
+
+	var worldmap = L.map('map', {
+		zoomControl :  true 
+	}).setView([38.800425, -77.7], 4);
+	
+	L.tileLayer('http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}', {
+	 		 minZoom : 1,
+	 		 maxZoom : 19,
+	 		 maxNativeZoom : 22
+	}).addTo(worldmap);
+
+	var Earthquakes = null;
+	var layerAllEQ = null;
+	var layerBigEQ = null;
+	var layerTsunamis = null;
+	loadJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
+		(function (data) {
+	        Earthquakes = JSON.parse(data);
+			layerAllEQ = L.geoJson(Earthquakes, { style: styleEQStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconAll() });
+			    }
+	});
+			layerAllEQ.addTo(worldmap);
+			layerBigEQ = L.geoJson(Earthquakes, { filter: layerBigEQFilter1, style: styleBigEqStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconBigEQ() });
+			    }
+	});
+			L.geoJson(Earthquakes, { filter: layerBigEQFilter2, style: styleEQStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconAll() });
+			    }
+	}).addTo(layerBigEQ);
+			layerBigEQ.addTo(worldmap);
+			layerTsunamis = L.geoJson(Earthquakes, { filter: layerTsunamisFilter1, style: styleTsunamiStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconTsunami() });
+			    }
+	});
+			layerTsunamis.addTo(worldmap);
+	}));
+	function transformDobbelRigMag(value) {
+		return (value*2);
+	}
+	function transform_4DobbelRigMag(value) {
+		return ((transformDobbelRigMag(value)*2)+(11/3));
+	}
+	function layerBigEQFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.mag === undefined || !feature.properties.magType === undefined )
+	            return false;
+	         if((feature.properties.mag > 5.0 && feature.properties.magType == "mb_lg" || feature.properties.magType == "ml"))
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerBigEQFilter2(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.sig === undefined || !feature.properties.mag === undefined || !feature.properties.cdi === undefined || !feature.properties.magType === undefined )
+	            return false;
+	         if((feature.properties.mag > 5.0 && (feature.properties.magType == "mwr" && feature.properties.sig > 100 || feature.properties.cdi != 2.0)))
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerTsunamisFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.tsunami === undefined )
+	            return false;
+	         if(feature.properties.tsunami ==  true )
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function styleTsunamiStyle() {
+		var style = {};
+		style["pointerIcon"] = getIconiconTsunami();
+		return style;
+	}
+	function styleBigEqStyle() {
+		var style = styleEQStyle();
+		style["pointerIcon"] = getIconiconBigEQ();
+		return style;
+	}
+	function styleEQStyle() {
+		var style = {};
+		style["pointerIcon"] = getIconiconAll();
+		return style;
+	}
+	function getIconiconBigEQ() {
+	    return L.icon({
+	        iconUrl: 'http://embed.widencdn.net/img/americanredcross/8acomfees0/486x486px/mobile-app-earthquake.jpg?keep=c&quality=100&u=r5akkb',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconBigEQ() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'http://embed.widencdn.net/img/americanredcross/8acomfees0/486x486px/mobile-app-earthquake.jpg?keep=c&quality=100&u=r5akkb';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconTsunami() {
+	    return L.icon({
+	        iconUrl: 'https://d30y9cdsu7xlg0.cloudfront.net/png/4251-200.png',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconTsunami() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'https://d30y9cdsu7xlg0.cloudfront.net/png/4251-200.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconAll() {
+	    return L.icon({
+	        iconUrl: 'https://cdn3.iconfinder.com/data/icons/earthquake/500/earthquake-24-512.png',
+	        iconSize: [20, 20]
+	    });
+	}
+	    
+	function getEasybuttonImageiconAll() {
+		var height = 20;
+		var width = 20;
+		var imageSrc = 'https://cdn3.iconfinder.com/data/icons/earthquake/500/earthquake-24-512.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	var toogleBigEQ = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconBigEQ(),
+	        stateName: 'toggled',
+	        title: 'BigEQ',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerBigEQ);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconBigEQ(),
+	        stateName: 'detoggled',
+	        title: 'BigEQ',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerBigEQ);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleBigEQ.button.style.backgroundColor = 'grey';
+	var toogleTsunamis = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconTsunami(),
+	        stateName: 'toggled',
+	        title: 'Tsunamis',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerTsunamis);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconTsunami(),
+	        stateName: 'detoggled',
+	        title: 'Tsunamis',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerTsunamis);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleTsunamis.button.style.backgroundColor = 'grey';
+	var toogleAllEQ = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconAll(),
+	        stateName: 'toggled',
+	        title: 'AllEQ',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerAllEQ);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconAll(),
+	        stateName: 'detoggled',
+	        title: 'AllEQ',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerAllEQ);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleAllEQ.button.style.backgroundColor = 'grey';
+
+	</script>
+</html>

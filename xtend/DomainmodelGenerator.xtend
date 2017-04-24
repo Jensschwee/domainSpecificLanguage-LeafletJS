@@ -183,7 +183,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	
 	def dispatch generateCSSElement(LineColor style) 
 	'''
-		style["color"] = "«style.value»";
+		style["color"] = "«style.color»";
 	'''
 	
 	def dispatch generateCSSElement(LineWidth style) 
@@ -460,7 +460,6 @@ class DomainmodelGenerator extends AbstractGenerator {
 				layer«l.name» = L.geoJson(«l.datasource.name»);
             	«ENDIF»
             	«state.counter = 0»
-            	«IF l.filter.size() !== 0»
 	            	«FOR filter : l.filter»
 		            	«IF state.counter != 0»
 		            		«IF filter.expression !== null»
@@ -479,7 +478,6 @@ class DomainmodelGenerator extends AbstractGenerator {
 		            	«ENDIF»
 		            	«state.setCounter(state.counter + 1)»
 	            	«ENDFOR»
-            	«ENDIF»
 						layer«l.name».addTo(«state.mapName»);
 			«ENDFOR»
 	}));

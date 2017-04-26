@@ -5,13 +5,13 @@ include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min
 include script "../myJs.js"
 
 map FF startZoom 12 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.800425 long -77.07 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          
-source json a "https://www.mapbox.com/help/data/stations.geojson" {
+
+source geojson a "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line
 }
 
-source json OU44_1 "https://www.mapbox.com/help/data/stations.geojson" {
-	variable line 
+source geojson OU44_1 "https://www.mapbox.com/help/data/stations.geojson" {
+	variable line
 }
 
 layer orangeLine from a {

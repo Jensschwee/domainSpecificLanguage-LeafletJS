@@ -139,7 +139,7 @@ DataSourceVariable:
 ;
 
 SourceType:
-	{JSON}'json'
+	{GEOJSON}'geojson'
 ;
 
 Include:

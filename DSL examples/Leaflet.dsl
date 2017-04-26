@@ -5,12 +5,12 @@ include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min
 
 map worldmap startZoom 11 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.8895 long -76.9853 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
-source json stations2 "https://www.mapbox.com/help/data/stations.geojson" {
+source geojson stations2 "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line
 }
 
-source json stations "https://www.mapbox.com/help/data/stations.geojson" {
-	variable line 
+source geojson stations "https://www.mapbox.com/help/data/stations.geojson" {
+	variable line
 }
 
 layer orangeLine from stations2 {
@@ -57,7 +57,14 @@ style GreenStyle : defaultStyle  {
 	pointerIcon iconGreen
 }
 
+<<<<<<< HEAD
+button toggles blueLine iconTemputur location bottomRight
+button toggles yellowLine iconTemputur location bottomRight
+button toggles greenLine iconTemputur1 location topLeft
+button toggles orangeLine iconTemputur1 location topLeft
+=======
 button toggles blueLine iconBlue location bottomRight
 button toggles yellowLine iconYellow location bottomRight
 button toggles greenLine iconGreen location topLeft
 button toggles orangeLine iconOrange location topLeft
+>>>>>>> 906bab115c47e7d96e7e220572aa34523bfe42f9

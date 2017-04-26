@@ -57,14 +57,7 @@ style GreenStyle : defaultStyle  {
 	pointerIcon iconGreen
 }
 
-<<<<<<< HEAD
-button toggles blueLine iconTemputur location bottomRight
-button toggles yellowLine iconTemputur location bottomRight
-button toggles greenLine iconTemputur1 location topLeft
-button toggles orangeLine iconTemputur1 location topLeft
-=======
 button toggles blueLine iconBlue location bottomRight
 button toggles yellowLine iconYellow location bottomRight
 button toggles greenLine iconGreen location topLeft
 button toggles orangeLine iconOrange location topLeft
->>>>>>> 906bab115c47e7d96e7e220572aa34523bfe42f9

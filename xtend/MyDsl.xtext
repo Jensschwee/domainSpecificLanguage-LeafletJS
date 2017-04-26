@@ -63,7 +63,7 @@ LineWidth:
 ;
 
 LineColor:
-	'lineColor' value=ID | hex=HEXCOLOR
+	'lineColor' color=BackgroundColorTypes
 ;
 
 LineOpacity:

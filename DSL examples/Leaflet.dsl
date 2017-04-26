@@ -2,36 +2,37 @@ leaflet 1.0.3
 
 include style "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-include script "../myJs.js"
 
-map FF startZoom 12 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.800425 long -77.07 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+map worldmap startZoom 11 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.8895 long -76.9853 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
-source geojson a "https://www.mapbox.com/help/data/stations.geojson" {
+source geojson stations2 "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line
 }
 
-source geojson OU44_1 "https://www.mapbox.com/help/data/stations.geojson" {
+source geojson stations "https://www.mapbox.com/help/data/stations.geojson" {
 	variable line
 }
 
-layer orangeLine from a {
-	filter defaultStyle where line = "orange"
+layer orangeLine from stations2 {
+	filter OrangeStyle where line = "orange"
 }
 
-layer blueLine from OU44_1{
-	filter defaultStyle where line = "blue"
+layer blueLine from stations{
+	filter BlueStyle where line = "blue"
 }
 
-layer yellowLine from OU44_1 {
-	filter defaultStyle where line = "yellow"
+layer yellowLine from stations {
+	filter YellowStyle where line = "yellow"
 }
 
-layer greenLine from OU44_1 {
-	filter coolStyle where line = "green"
+layer greenLine from stations {
+	filter GreenStyle where line = "green"
 }
 
-icon iconTemputur size 5 source "http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png"
-icon iconTemputur1 size 16 source "http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png"
+icon iconBlue size 10 source "http://www.freeiconspng.com/uploads/button-blank-blue-icon-6.png"
+icon iconYellow size 10 source "http://icons.iconarchive.com/icons/hopstarter/soft-scraps/256/Button-Blank-Yellow-icon.png"
+icon iconGreen size 10 source "https://www.mouserunner.com/Icons/Shiny_Things_Preview_icon.png"
+icon iconOrange size 10 source "https://upload.wikimedia.org/wikipedia/commons/4/46/Button_Icon_Orange.svg"
 
 style defaultStyle {
 	lineColor red
@@ -40,11 +41,30 @@ style defaultStyle {
 	backgroundOpacity 90%
 }
 
-style coolStyle : defaultStyle  {
-	backgroundColor blue
+style BlueStyle : defaultStyle  {
+	pointerIcon iconBlue
 }
 
+style YellowStyle : defaultStyle  {
+	pointerIcon iconYellow
+}
+
+style OrangeStyle : defaultStyle  {
+	pointerIcon iconOrange
+}
+
+style GreenStyle : defaultStyle  {
+	pointerIcon iconGreen
+}
+
+<<<<<<< HEAD
 button toggles blueLine iconTemputur location bottomRight
 button toggles yellowLine iconTemputur location bottomRight
 button toggles greenLine iconTemputur1 location topLeft
 button toggles orangeLine iconTemputur1 location topLeft
+=======
+button toggles blueLine iconBlue location bottomRight
+button toggles yellowLine iconYellow location bottomRight
+button toggles greenLine iconGreen location topLeft
+button toggles orangeLine iconOrange location topLeft
+>>>>>>> 906bab115c47e7d96e7e220572aa34523bfe42f9

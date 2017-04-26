@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.js"></script>
+	<title>Leaflet DSL</title>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            min-height: 100%;
+        }
+	</style>
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <div id="map">
+    </div>
+</body>
+<script>
+    function loadJSON(url, callback) {
+            var xobj = new XMLHttpRequest();
+            xobj.overrideMimeType("application/javascipt");
+            //xobj.responseType = 'jsonp';
+            xobj.open('GET', url, true);
+            xobj.onreadystatechange = function () {
+                if (xobj.readyState == 4 && xobj.status == "200") {
+                    // .open will NOT return a value but simply returns undefined in async mode so use a callback
+                    //console.log(JSON.parse(xobj.responseText));
+                    //return xobj.responseText;
+                   callback(xobj.responseText);
+                }
+            }
+            xobj.send(null);
+        }
+
+	var worldmap = L.map('map', {
+		zoomControl :  true 
+	}).setView([55.609991, 12.690006], 4);
+	
+	L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	 		 minZoom : 1,
+	 		 maxZoom : 19,
+	 		 maxNativeZoom : 22
+	}).addTo(worldmap);
+
+	var TheWorld = null;
+	var layerAfghanistan = null;
+	var layerEU = null;
+	var layerDenmark = null;
+	var layerGreenland = null;
+	loadJSON("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json",
+		(function (data) {
+	        TheWorld = JSON.parse(data);
+			layerAfghanistan = L.geoJson(TheWorld, { filter: layerAfghanistanFilter1, style: styledefaultStyle });
+			layerAfghanistan.addTo(worldmap);
+			layerEU = L.geoJson(TheWorld, { filter: layerEUFilter1, style: styleblue });
+			L.geoJson(TheWorld, { filter: layerEUFilter2, style: styleblue }).addTo(layerEU);
+			L.geoJson(TheWorld, { filter: layerEUFilter3, style: styleblue }).addTo(layerEU);
+			L.geoJson(TheWorld, { filter: layerEUFilter4, style: styleblue }).addTo(layerEU);
+			L.geoJson(TheWorld, { filter: layerEUFilter5, style: styleblue }).addTo(layerEU);
+			L.geoJson(TheWorld, { filter: layerEUFilter6, style: styleblueOpacityMax }).addTo(layerEU);
+			layerEU.addTo(worldmap);
+			layerDenmark = L.geoJson(TheWorld, { filter: layerDenmarkFilter1, style: stylered });
+			layerDenmark.addTo(worldmap);
+			layerGreenland = L.geoJson(TheWorld, { filter: layerGreenlandFilter1, style: stylegreen });
+			layerGreenland.addTo(worldmap);
+	}));
+	function layerAfghanistanFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Afghanistan")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerEUFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Denmark" || feature.properties.name == "Ireland" || feature.properties.name == "Sweden" || feature.properties.name == "Germany" || feature.properties.name == "Poland" || feature.properties.name == "Luxembourg")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerEUFilter2(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Finland" || feature.properties.name == "France" || feature.properties.name == "Spain" || feature.properties.name == "Greece" || feature.properties.name == "Netherlands" || feature.properties.name == "Malta")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerEUFilter3(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Italy" || feature.properties.name == "Austria" || feature.properties.name == "Belgium" || feature.properties.name == "Bulgaria" || feature.properties.name == "Croatia" || feature.properties.name == "Cyprus")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerEUFilter4(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Czech Republic" || feature.properties.name == "Estonia" || feature.properties.name == "Hungary" || feature.properties.name == "Latvia" || feature.properties.name == "Lithuania" || feature.properties.name == "Portugal")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerEUFilter5(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Romania" || feature.properties.name == "Slovakia" || feature.properties.name == "Slovenia")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerEUFilter6(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "United Kingdom")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerDenmarkFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	            if (feature.geometry.type !== "MultiPolygon")
+	                        return false;
+	         if(feature.properties.name == "Denmark")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerGreenlandFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.name === undefined )
+	            return false;
+	         if(feature.properties.name == "Greenland")
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function styledefaultStyle() {
+		var style = {};
+		style["fillColor"] = "black";
+		style["fillOpacity"] = 0.5;
+		style["color"] = "black";
+		style["opacity"] = 0.4;
+		return style;
+	}
+	function stylered() {
+		var style = styledefaultStyle();
+		style["fillColor"] = "red";
+		style["color"] = "red";
+		style["fillOpacity"] = 0.9;
+		style["weight"] = 5;
+		return style;
+	}
+	function styleblue() {
+		var style = stylered();
+		style["fillColor"] = "blue";
+		style["color"] = "blue";
+		return style;
+	}
+	function styleblueOpacityMax() {
+		var style = styleblue();
+		style["fillOpacity"] = 0.0;
+		return style;
+	}
+	function stylegreen() {
+		var style = styledefaultStyle();
+		style["fillColor"] = "green";
+		return style;
+	}
+	function getIconiconAfghanistan() {
+	    return L.icon({
+	        iconUrl: 'https://www.iconexperience.com/_img/v_collection_png/32x32/shadow/flag_afghanistan.png',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconAfghanistan() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'https://www.iconexperience.com/_img/v_collection_png/32x32/shadow/flag_afghanistan.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconDenmark() {
+	    return L.icon({
+	        iconUrl: 'https://www.iconfinder.com/icons/96204/download/ico',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconDenmark() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'https://www.iconfinder.com/icons/96204/download/ico';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconEU() {
+	    return L.icon({
+	        iconUrl: 'https://cdn4.iconfinder.com/data/icons/flat-circle-flag/182/circle_flag_europe_eu-512.png',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconEU() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'https://cdn4.iconfinder.com/data/icons/flat-circle-flag/182/circle_flag_europe_eu-512.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	function getIconiconGreenland() {
+	    return L.icon({
+	        iconUrl: 'http://icons.iconseeker.com/png/fullsize/rounded-world-flags/greenland-flag.png',
+	        iconSize: [16, 16]
+	    });
+	}
+	    
+	function getEasybuttonImageiconGreenland() {
+		var height = 16;
+		var width = 16;
+		var imageSrc = 'http://icons.iconseeker.com/png/fullsize/rounded-world-flags/greenland-flag.png';
+		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
+	}
+	var toogleAfghanistan = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconAfghanistan(),
+	        stateName: 'toggled',
+	        title: 'Afghanistan',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerAfghanistan);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconAfghanistan(),
+	        stateName: 'detoggled',
+	        title: 'Afghanistan',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerAfghanistan);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleAfghanistan.button.style.backgroundColor = 'grey';
+	var toogleDenmark = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomright',
+	    states: [{
+	        icon: getEasybuttonImageiconDenmark(),
+	        stateName: 'toggled',
+	        title: 'Denmark',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerDenmark);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconDenmark(),
+	        stateName: 'detoggled',
+	        title: 'Denmark',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerDenmark);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleDenmark.button.style.backgroundColor = 'grey';
+	var toogleEU = L.easyButton({
+		id: 'easy-button',
+	    position: 'topright',
+	    states: [{
+	        icon: getEasybuttonImageiconEU(),
+	        stateName: 'toggled',
+	        title: 'EU',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerEU);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconEU(),
+	        stateName: 'detoggled',
+	        title: 'EU',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerEU);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleEU.button.style.backgroundColor = 'grey';
+	var toogleGreenland = L.easyButton({
+		id: 'easy-button',
+	    position: 'bottomleft',
+	    states: [{
+	        icon: getEasybuttonImageiconGreenland(),
+	        stateName: 'toggled',
+	        title: 'Greenland',
+	        onClick: function (btn) {
+	        	btn.state('detoggled');
+	            btn.button.style.backgroundColor = 'white';
+	            worldmap.removeLayer(layerGreenland);
+	        }
+	    },
+		{
+	        icon: getEasybuttonImageiconGreenland(),
+	        stateName: 'detoggled',
+	        title: 'Greenland',
+	        onClick: function (btn) {
+				btn.state('toggled');
+				btn.button.style.backgroundColor = 'grey';
+				worldmap.addLayer(layerGreenland);
+			}
+		}]
+	}).addTo(worldmap);
+	toogleGreenland.button.style.backgroundColor = 'grey';
+
+	</script>
+</html>

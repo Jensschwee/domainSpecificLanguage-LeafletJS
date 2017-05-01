@@ -17,7 +17,7 @@ source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/su
 	variable time
 }
 
-transform thisyear time where value / (31556926 * 1000) + 1970
+transform dataYear time where value / (31556926 * 1000) + 1970
 
 layer BigEQ from Earthquakes {
 	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
@@ -29,7 +29,7 @@ layer Tsunamis from Earthquakes {
 }
 
 layer ThisYear from Earthquakes {
-	filter EQStyle where thisyear > 2016 and thisyear < 2018
+	filter EQStyle where dataYear > 2016 and dataYear < 2018
 }
 
 style TsunamiStyle{

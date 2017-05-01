@@ -83,7 +83,7 @@
 	});
 			layerThisYear.addTo(worldmap);
 	}));
-	function transformthisyear(value) {
+	function transformdataYear(value) {
 		return ((value/(31556926*1000))+1970);
 	}
 	function layerBigEQFilter1(feature) {
@@ -116,7 +116,7 @@
 	function layerThisYearFilter1(feature) {
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.time === undefined )
 	            return false;
-	         if((transformthisyear(feature.properties.time) > 2016 && transformthisyear(feature.properties.time) < 2018))
+	         if((transformdataYear(feature.properties.time) > 2016 && transformdataYear(feature.properties.time) < 2018))
 	         {
 	         	return true;
 	         }

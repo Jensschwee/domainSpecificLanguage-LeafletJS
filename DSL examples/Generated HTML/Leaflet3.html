@@ -53,18 +53,12 @@
 	}).addTo(worldmap);
 
 	var Earthquakes = null;
-	var layerAllEQ = null;
 	var layerBigEQ = null;
 	var layerTsunamis = null;
+	var layerThisYear = null;
 	loadJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
 		(function (data) {
 	        Earthquakes = JSON.parse(data);
-			layerAllEQ = L.geoJson(Earthquakes, { style: styleEQStyle ,
-			    pointToLayer: function(feature, latlng) {
-			        return L.marker(latlng, { icon: getIconiconAll() });
-			    }
-	});
-			layerAllEQ.addTo(worldmap);
 			layerBigEQ = L.geoJson(Earthquakes, { filter: layerBigEQFilter1, style: styleBigEqStyle ,
 			    pointToLayer: function(feature, latlng) {
 			        return L.marker(latlng, { icon: getIconiconBigEQ() });
@@ -82,17 +76,20 @@
 			    }
 	});
 			layerTsunamis.addTo(worldmap);
+			layerThisYear = L.geoJson(Earthquakes, { filter: layerThisYearFilter1, style: styleEQStyle ,
+			    pointToLayer: function(feature, latlng) {
+			        return L.marker(latlng, { icon: getIconiconAll() });
+			    }
+	});
+			layerThisYear.addTo(worldmap);
 	}));
-	function transformDobbelRigMag(value) {
-		return (value*2);
-	}
-	function transform_4DobbelRigMag(value) {
-		return ((transformDobbelRigMag(value)*2)+(11/3));
+	function transformthisyear(value) {
+		return ((value/(31556926*1000))+1970);
 	}
 	function layerBigEQFilter1(feature) {
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.mag === undefined || !feature.properties.magType === undefined )
 	            return false;
-	         if((feature.properties.mag > 5.0 && feature.properties.magType == "mb_lg" || feature.properties.magType == "ml"))
+	         if((feature.properties.mag > 5.0 && (feature.properties.magType == "mb_lg" || feature.properties.magType == "ml")))
 	         {
 	         	return true;
 	         }
@@ -101,7 +98,7 @@
 	function layerBigEQFilter2(feature) {
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.sig === undefined || !feature.properties.mag === undefined || !feature.properties.cdi === undefined || !feature.properties.magType === undefined )
 	            return false;
-	         if((feature.properties.mag > 5.0 && (feature.properties.magType == "mwr" && feature.properties.sig > 100 || feature.properties.cdi != 2.0)))
+	         if((feature.properties.mag > 5.0 && (feature.properties.magType == "mwr" && (feature.properties.sig > 100 || feature.properties.cdi != 2.0))))
 	         {
 	         	return true;
 	         }
@@ -111,6 +108,15 @@
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.tsunami === undefined )
 	            return false;
 	         if(feature.properties.tsunami ==  true )
+	         {
+	         	return true;
+	         }
+	        return false;
+	}
+	function layerThisYearFilter1(feature) {
+	        if (feature == undefined || feature.properties === undefined || !feature.properties.time === undefined )
+	            return false;
+	         if((transformthisyear(feature.properties.time) > 2016 && transformthisyear(feature.properties.time) < 2018))
 	         {
 	         	return true;
 	         }
@@ -220,31 +226,31 @@
 		}]
 	}).addTo(worldmap);
 	toogleTsunamis.button.style.backgroundColor = 'grey';
-	var toogleAllEQ = L.easyButton({
+	var toogleThisYear = L.easyButton({
 		id: 'easy-button',
 	    position: 'bottomright',
 	    states: [{
 	        icon: getEasybuttonImageiconAll(),
 	        stateName: 'toggled',
-	        title: 'AllEQ',
+	        title: 'ThisYear',
 	        onClick: function (btn) {
 	        	btn.state('detoggled');
 	            btn.button.style.backgroundColor = 'white';
-	            worldmap.removeLayer(layerAllEQ);
+	            worldmap.removeLayer(layerThisYear);
 	        }
 	    },
 		{
 	        icon: getEasybuttonImageiconAll(),
 	        stateName: 'detoggled',
-	        title: 'AllEQ',
+	        title: 'ThisYear',
 	        onClick: function (btn) {
 				btn.state('toggled');
 				btn.button.style.backgroundColor = 'grey';
-				worldmap.addLayer(layerAllEQ);
+				worldmap.addLayer(layerThisYear);
 			}
 		}]
 	}).addTo(worldmap);
-	toogleAllEQ.button.style.backgroundColor = 'grey';
+	toogleThisYear.button.style.backgroundColor = 'grey';
 
 	</script>
 </html>

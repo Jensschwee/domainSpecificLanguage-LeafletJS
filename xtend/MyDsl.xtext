@@ -71,7 +71,7 @@ LineOpacity:
 ;
 
 Transform:
-	'transform' name=ID variable=ID expression=MathTermSimple
+	'transform' name=ID variable=ID 'where' expression=MathTermSimple
 ;
 
 Layer:

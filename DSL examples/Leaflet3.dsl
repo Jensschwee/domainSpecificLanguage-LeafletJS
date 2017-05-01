@@ -14,14 +14,10 @@ source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/su
 	variable status
 	variable sig
 	variable net
+	variable time
 }
 
-transform DobbelRigMag mag value * 2
-transform _4DobbelRigMag mag DobbelRigMag * 2 + 11/3
-
-layer AllEQ from Earthquakes{
-	filter EQStyle
-}
+transform thisyear time where value / (31556926 * 1000) + 1970
 
 layer BigEQ from Earthquakes {
 	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
@@ -30,6 +26,10 @@ layer BigEQ from Earthquakes {
 
 layer Tsunamis from Earthquakes {
 	filter TsunamiStyle where tsunami = true
+}
+
+layer ThisYear from Earthquakes {
+	filter EQStyle where thisyear > 2016 and thisyear < 2018
 }
 
 style TsunamiStyle{
@@ -50,4 +50,4 @@ icon iconAll size 20 source "https://cdn3.iconfinder.com/data/icons/earthquake/5
 
 button toggles BigEQ iconBigEQ location bottomRight
 button toggles Tsunamis iconTsunami location bottomRight
-button toggles AllEQ iconAll location bottomRight
+button toggles ThisYear iconAll location bottomRight

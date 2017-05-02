@@ -14,10 +14,6 @@ LeafletVersion:
 	'leaflet' version=LeafletSupportedVersions
 ;
 
-LeafletSupportedVersions:
-	{VERSION103} '1.0.3'
-;
-
 Button:
 	'button' btn=ToggleButton
 ;
@@ -251,6 +247,10 @@ terminal HEXCOLOR:
 	'#' HEXCHAR HEXCHAR HEXCHAR HEXCHAR HEXCHAR HEXCHAR
 ;
 
-terminal HEXCHAR:
+terminal fragment HEXCHAR:
 	('a'..'f'|'A'..'F'|'0'..'9')
+;
+
+LeafletSupportedVersions:
+	version=STRING
 ;

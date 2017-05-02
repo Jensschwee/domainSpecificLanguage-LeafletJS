@@ -1,4 +1,4 @@
-leaflet 1.0.3
+leaflet "1.0.3"
 
 include style "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
 include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"

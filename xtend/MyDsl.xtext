@@ -131,7 +131,11 @@ DataSource:
 ;
 
 DataSourceVariable:
-	'variable' vname=ID
+	'variable' vname=ID 'to' mapsto=STRING 'type' type=DataSourceVariableType
+;
+
+DataSourceVariableType:
+	{String}'string' | {Number}'number'
 ;
 
 SourceType:

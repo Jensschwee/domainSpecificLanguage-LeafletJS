@@ -86,9 +86,9 @@
 		return (((((transformCelciusToFahrenheit(value)*value)+(1/5))+32)+3)+(34*2));
 	}
 	function layerorangeLineFilter1(feature) {
-	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
+	        if (feature == undefined || feature.properties === undefined || !feature.properties["line"] === undefined )
 	            return false;
-	         if(feature.properties.line == "orange")
+	         if(feature.properties["line"] == "orange")
 	         {
 	         	return true;
 	         }

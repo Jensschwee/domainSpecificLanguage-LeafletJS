@@ -6,11 +6,11 @@ include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min
 map worldmap startZoom 11 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.8895 long -76.9853 "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 source geojson stations2 "https://www.mapbox.com/help/data/stations.geojson" {
-	variable line
+	variable line to "line" type string
 }
 
 source geojson stations "https://www.mapbox.com/help/data/stations.geojson" {
-	variable line
+	variable line to "line" type string
 }
 
 layer orangeLine from stations2 {

@@ -96,6 +96,7 @@ import org.example.domainmodel.domainmodel.MULTILINESTRING
 import org.example.domainmodel.domainmodel.MULTIPOINT
 import org.example.domainmodel.domainmodel.GEOMETRYCOLLECTION
 import org.example.domainmodel.domainmodel.MULTIPOLYGON
+import org.example.domainmodel.domainmodel.DataSourceVariable
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -218,7 +219,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 			«IF filter.expression !== null »
 				«var variabels =  filter.expression.findVariabelsForFilter»
 				function layer«layer.name»Filter«state.counter»(feature) {
-				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties.«str» === undefined «ENDFOR»)
+				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties["«str»"] === undefined «ENDFOR»)
 				            return false;
 				            «IF(filter.mapType !== null)»
 				            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
@@ -269,7 +270,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''(«expression.left.findSubExpression» || «expression.right.findSubExpression»)'''
 	
 	def dispatch CharSequence findSubExpression(AllTypes type)
-	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression»«ELSE»feature.properties.«type.id»«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
+	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression»«ELSE»feature.properties["«type.id»"]«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
 	
 	def dispatch CharSequence findSubExpression(BOOLEAN bool)'''«printBOOLEAN(bool)»'''
 	
@@ -288,8 +289,8 @@ class DomainmodelGenerator extends AbstractGenerator {
 	}
 	
 	def dispatch CharSequence findSubExpression(Transform exp)
-	'''transform«exp.name»(feature.properties.«exp.variable»)'''
-		
+	'''transform«exp.name»(feature.properties["«exp.variable»"])'''
+	
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
 	def dispatch getMaptypeGenerate(LINESTRING type)'''LineString'''
@@ -299,79 +300,84 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch getMaptypeGenerate(MULTIPOLYGON type)'''MultiPolygon'''
 	
 	def Set<String> findVariabelsForFilter(LogicExpression dis){
+		var filter =	dis.eContainer() as Filter;
+		var layer =	filter.eContainer() as Layer;
 		var variabels = new HashSet<String>();
-		dis.findVariable(variabels);
+		dis.findVariable(variabels, layer.datasource.variables);
 		return variabels;
 	}
 	
-	def dispatch void findVariable(Disjunction di, Set<String> variabels){
-		di.left.findVariable(variabels);
-		di.right.findVariable(variabels);
+	def dispatch void findVariable(Disjunction di, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
+		di.left.findVariable(variabels,datasourceVariables);
+		di.right.findVariable(variabels,datasourceVariables);
 	}
 	
-	def dispatch void findVariable(Conjunction con, Set<String> variabels){
-		con.left.findVariable(variabels);
-		con.right.findVariable(variabels);
+	def dispatch void findVariable(Conjunction con, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
+		con.left.findVariable(variabels,datasourceVariables);
+		con.right.findVariable(variabels,datasourceVariables);
 	}
 	
-	def dispatch void findVariable(LogicExp le, Set<String> variabels){
-		le.left.findVariable(variabels);
-		le.right.findVariable(variabels);
+	def dispatch void findVariable(LogicExp le, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
+		le.left.findVariable(variabels,datasourceVariables);
+		le.right.findVariable(variabels,datasourceVariables);
 	}
 	
-	def dispatch void findVariable(AllTypes at, Set<String> variabels){
+	def dispatch void findVariable(AllTypes at, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
 		if(at.id !== null)
 		{
 			var transform = state.transforms.findFirst[it.name==at.id]
 			if(transform === null)
 			{
-				variabels.add(at.id);
+				var variable = datasourceVariables.findFirst[it.vname == at.id]
+				variabels.add(variable.mapsto);
 			}
 			else
 			{
-				transform.findTransformVariables(variabels);
+				transform.findTransformVariables(variabels, datasourceVariables);
 			}
 		}
 	}
 	
-	def dispatch void findVariable(Comparison con, Set<String> variabels){
-		con.left.findVariable(variabels);		
-		con.right.findVariable(variabels);
+	def dispatch void findVariable(Comparison con, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
+		con.left.findVariable(variabels, datasourceVariables);		
+		con.right.findVariable(variabels, datasourceVariables);
 	}
 	
 	def dispatch generateModelItemMember(Button button) 
 	'''«generateButton(button.btn)»
 	'''
 	
-	def findTransformVariables(Transform transform, Set<String> variabels)
+	def findTransformVariables(Transform transform, Set<String> variabels, List<DataSourceVariable> datasourceVariables )
 	{
-		variabels.add(transform.variable);
+		var variable = datasourceVariables.findFirst[it.vname == transform.variable]
+		variabels.add(variable.mapsto);
 		if(transform.expression !== null)
-			transform.expression.findTransforms(variabels);
+			transform.expression.findTransforms(variabels, datasourceVariables);
 	}
 	
-	def dispatch void findTransforms(MathExp mat, Set<String> variabels)
+	
+	def dispatch void findTransforms(MathExp mat, Set<String> variabels, List<DataSourceVariable> datasourceVariables )
 	{
 		//DO NOTHING	
 	}
 	
-	def dispatch void findTransforms(Value mat, Set<String> variabels)
+	def dispatch void findTransforms(Value mat, Set<String> variabels, List<DataSourceVariable> datasourceVariables )
 	{
 		//DO NOTHING
 	}
 	
-	def dispatch void findTransforms(MathOp mat, Set<String> variabels)
+	def dispatch void findTransforms(MathOp mat, Set<String> variabels, List<DataSourceVariable> datasourceVariables )
 	{
 		if(mat.left !== null)
-			mat.left.findTransforms(variabels)
+			mat.left.findTransforms(variabels, datasourceVariables)
 		if(mat.right !== null)	
-			mat.right.findTransforms(variabels)
+			mat.right.findTransforms(variabels, datasourceVariables)
 	}
 	
-	def dispatch void findTransforms(MathTerm mat, Set<String> variabels)
+	def dispatch void findTransforms(MathTerm mat, Set<String> variabels, List<DataSourceVariable> datasourceVariables )
 	{
 		if(mat.transform !== null)
-			mat.transform.findTransformVariables(variabels);
+			mat.transform.findTransformVariables(variabels, datasourceVariables);
 	}
 	
 	def generateButton(ToggleButton buttons)'''		

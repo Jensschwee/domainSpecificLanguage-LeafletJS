@@ -6,7 +6,7 @@ include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min
 map worldmap startZoom 4 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 55.609991 long 12.690006  "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
 
 source geojson TheWorld "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json" {
-	variable name
+	variable name to "name" type string
 }
 
 layer Afghanistan from TheWorld {

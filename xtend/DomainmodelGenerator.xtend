@@ -243,53 +243,55 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''
 	
 	def generateFilterExpression(LogicExpression expression)'''
-	if(«expression.findSubExpression»)
+	«var filter =expression.eContainer() as Filter»
+	«var layer =filter.eContainer() as Layer»
+	if(«expression.findSubExpression(layer)»)
 	{
 		return true;
 	}
 	'''
 	
-	def dispatch CharSequence findSubExpression(LogicExpression expression)
+	def dispatch CharSequence findSubExpression(LogicExpression expression, Layer layer)
 	{
 		//DO NOTHING
 	}
 	
-	def dispatch CharSequence findSubExpression(Comparison expression)
-	'''«expression.left.findSubExpression»«expression.oparator.findSubExpression»«expression.right.findSubExpression»'''	
-	def dispatch CharSequence findSubExpression(LESS less)''' < '''
-	def dispatch CharSequence findSubExpression(MORE less)''' > '''
-	def dispatch CharSequence findSubExpression(EQ less)''' == '''
-	def dispatch CharSequence findSubExpression(EQLESS less)''' <= '''
-	def dispatch CharSequence findSubExpression(EQMORE less)''' >= '''
-	def dispatch CharSequence findSubExpression(NOT less)''' != '''
+	def dispatch CharSequence findSubExpression(Comparison expression, Layer layer)
+	'''«expression.left.findSubExpression(layer)»«expression.oparator.findSubExpression(layer)»«expression.right.findSubExpression(layer)»'''	
+	def dispatch CharSequence findSubExpression(LESS less, Layer layer)''' < '''
+	def dispatch CharSequence findSubExpression(MORE less, Layer layer)''' > '''
+	def dispatch CharSequence findSubExpression(EQ less, Layer layer)''' == '''
+	def dispatch CharSequence findSubExpression(EQLESS less, Layer layer)''' <= '''
+	def dispatch CharSequence findSubExpression(EQMORE less, Layer layer)''' >= '''
+	def dispatch CharSequence findSubExpression(NOT less, Layer layer)''' != '''
 			
-	def dispatch CharSequence  findSubExpression(Disjunction expression)
-	'''(«expression.left.findSubExpression» && «expression.right.findSubExpression»)'''
+	def dispatch CharSequence  findSubExpression(Disjunction expression, Layer layer)
+	'''(«expression.left.findSubExpression(layer)» && «expression.right.findSubExpression(layer)»)'''
 	
-	def dispatch CharSequence  findSubExpression(Conjunction expression)
-	'''(«expression.left.findSubExpression» || «expression.right.findSubExpression»)'''
+	def dispatch CharSequence  findSubExpression(Conjunction expression, Layer layer)
+	'''(«expression.left.findSubExpression(layer)» || «expression.right.findSubExpression(layer)»)'''
 	
-	def dispatch CharSequence findSubExpression(AllTypes type)
-	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression»«ELSE»feature.properties["«type.id»"]«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
+	def dispatch CharSequence findSubExpression(AllTypes type, Layer layer)
+	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression(layer)»«ELSE»feature.properties["«layer.datasource.variables.findFirst[it.vname == type.id].mapsto»"]«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
 	
-	def dispatch CharSequence findSubExpression(BOOLEAN bool)'''«printBOOLEAN(bool)»'''
+	def dispatch CharSequence findSubExpression(BOOLEAN bool, Layer layer)'''«printBOOLEAN(bool)»'''
 	
-	def dispatch CharSequence findSubExpression(NumberTypes num)
+	def dispatch CharSequence findSubExpression(NumberTypes num, Layer layer)
 	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
 	
-	def dispatch CharSequence findSubExpression(LogicExp exp)
-	'''«IF exp.op.equals("and")»(«ENDIF»«exp.left.findSubExpression»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression»«IF exp.op.equals("and")»)«ENDIF»'''
+	def dispatch CharSequence findSubExpression(LogicExp exp, Layer layer)
+	'''«IF exp.op.equals("and")»(«ENDIF»«exp.left.findSubExpression(layer)»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression(layer)»«IF exp.op.equals("and")»)«ENDIF»'''
 	
-	def dispatch CharSequence findSubExpression(MathTerm exp)
+	def dispatch CharSequence findSubExpression(MathTerm exp, Layer layer)
 	{
 		if(exp.transform !== null)
 		{
-			exp.transform.findSubExpression
+			exp.transform.findSubExpression(layer)
 		}
 	}
 	
-	def dispatch CharSequence findSubExpression(Transform exp)
-	'''transform«exp.name»(feature.properties["«exp.variable»"])'''
+	def dispatch CharSequence findSubExpression(Transform exp, Layer layer)
+	'''transform«exp.name»(feature.properties["«layer.datasource.variables.findFirst[it.vname == exp.variable].mapsto»"])'''
 	
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
@@ -300,7 +302,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch getMaptypeGenerate(MULTIPOLYGON type)'''MultiPolygon'''
 	
 	def Set<String> findVariabelsForFilter(LogicExpression dis){
-		var filter =	dis.eContainer() as Filter;
+		var filter = dis.eContainer() as Filter;
 		var layer =	filter.eContainer() as Layer;
 		var variabels = new HashSet<String>();
 		dis.findVariable(variabels, layer.datasource.variables);

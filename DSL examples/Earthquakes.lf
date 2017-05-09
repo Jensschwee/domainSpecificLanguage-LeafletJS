@@ -14,10 +14,11 @@ source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/su
 	variable status to "status" type number
 	variable sig to "sig" type number
 	variable net to "net" type number
-	variable time to "time" type number
+	variable test to "time" type number
+	variable typeof to "type" type string
 }
 
-transform dataYear time where value / (31556926 * 1000) + 1970
+transform dataYear test where value / (31556926 * 1000) + 1970
 
 layer BigEQ from Earthquakes {
 	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
@@ -30,6 +31,10 @@ layer Tsunamis from Earthquakes {
 
 layer ThisYear from Earthquakes {
 	filter EQStyle where dataYear > 2016 and dataYear < 2018
+}
+
+layer fisk from Earthquakes {
+	filter where typeof = "earthquake"
 }
 
 style TsunamiStyle{

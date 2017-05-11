@@ -33,11 +33,16 @@ import org.example.domainmodel.domainmodel.BOOLEAN
 import org.example.domainmodel.domainmodel.Bool
 import org.example.domainmodel.domainmodel.impl.BoolImpl
 
+public enum DataTypes {
+    BOOLIAN, STRING, NUMBER
+}
+
 class StateClass {  
     @Property
     var Set<Transform> transforms = new HashSet();
      @Property
     var Set<DataSource> datasources = new HashSet();
+    
 }
 
 /**
@@ -74,17 +79,20 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	
 	def dispatch void findFilterVariables(Disjunction di, Set<String> variabels){
 		di.left.findFilterVariables(variabels);
-		di.right.findFilterVariables(variabels);
+		if(di.right !== null)
+			di.right.findFilterVariables(variabels);
 	}
 	
 	def dispatch void findFilterVariables(Conjunction con, Set<String> variabels){
 		con.left.findFilterVariables(variabels);
-		con.right.findFilterVariables(variabels);
+		if(con.right !== null)
+			con.right.findFilterVariables(variabels);
 	}
 	
 	def dispatch void findFilterVariables(LogicExp le, Set<String> variabels){
 		le.left.findFilterVariables(variabels);
-		le.right.findFilterVariables(variabels);
+		if(le.right !== null)
+			le.right.findFilterVariables(variabels);
 	}
 	
 	def dispatch void findFilterVariables(AllTypes at, Set<String> variabels){
@@ -130,12 +138,13 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	
 	def dispatch void findFilterVariables(Comparison con, Set<String> variabels){
 		con.left.findFilterVariables(variabels);
-		con.right.findFilterVariables(variabels);
+		if(con.right !== null)
+			con.right.findFilterVariables(variabels);
 	}
 	
 	@Check
 	def checkFilterDatasoruces(Filter filter) {
-		if(filter.expression != null )
+		if(filter.expression !== null )
 		{
 			var layer =	filter.eContainer() as Layer;
 			var variables =  filter.expression.findVariabelsForFilter;
@@ -149,7 +158,8 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			{
 				if(!datasoruceVar.contains(variable))
 					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
-			}	
+			}
+			filter.expression.checkDatatypeExp(layer.datasource.variables);
 		 }
 	}
 	
@@ -190,55 +200,60 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		state.datasources.add(datasource);
 	}
 	
-	@Check
-	def checkDataTypesForFilter(Filter filter) {
-		var layer =	filter.eContainer() as Layer;
-		filter.expression.checkDatatypeExp(layer.datasource.variables);
-	}
-	
 	def void checkDatatypeExp(LogicExpression exp,EList<DataSourceVariable> variables) {
 		exp.checkDatatypeFilterExp(variables);
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables) {
-		var type1 =	exp.left.checkDatatypeFilterExp(variables);
-		var type2 = exp.right.checkDatatypeFilterExp(variables);
-		type1.checkDatatypes(type2);
-		System.out.println("fisk");
+	def dispatch DataTypes checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables) {
+		var type1 = exp.left.checkDatatypeFilterExp(variables);
+		if(exp.right !== null)
+		{
+			var type2 = exp.right.checkDatatypeFilterExp(variables);
+			type1.checkDatatypes(type2);
+		}
 		return null;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables){
-		var type1 =	com.left.checkDatatypeFilterExp(variables);
-		var type2 = com.right.checkDatatypeFilterExp(variables);
-		type1.checkDatatypes(type2);
+	def dispatch DataTypes checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables){
+		var type1 = com.left.checkDatatypeFilterExp(variables);
+		if(com.right !== null)
+		{
+			var type2 = com.right.checkDatatypeFilterExp(variables);
+			type1.checkDatatypes(type2);
+		}
 		return null;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables){
-		var type1 =	di.left.checkDatatypeFilterExp(variables);
-		var type2 = di.right.checkDatatypeFilterExp(variables);
-		type1.checkDatatypes(type2);
-				return null;
+	def dispatch DataTypes checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables){
+		var type1 =  di.left.checkDatatypeFilterExp(variables);
+		if(di.right !== null)
+		{
+			var type2 = di.right.checkDatatypeFilterExp(variables);
+			type1.checkDatatypes(type2);
+		}
+		return null;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables){
-		var type1 =	con.left.checkDatatypeFilterExp(variables);
-		var type2 = con.right.checkDatatypeFilterExp(variables);
-		type1.checkDatatypes(type2);
-						return null;
+	def dispatch DataTypes checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables){
+		var type1 = con.left.checkDatatypeFilterExp(variables);
+		if(con.right !== null)
+		{
+			var type2 = con.right.checkDatatypeFilterExp(variables);
+			type1.checkDatatypes(type2);
+		}
+		return null;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(MathTerm datatype,EList<DataSourceVariable> variables) {
-		new Integer(0);
+	def dispatch DataTypes checkDatatypeFilterExp(MathTerm datatype,EList<DataSourceVariable> variables) {
+		return DataTypes.NUMBER;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(BOOLEAN datatype,EList<DataSourceVariable> variables) {
-		return new Boolean(true);
+	def dispatch DataTypes checkDatatypeFilterExp(BOOLEAN datatype,EList<DataSourceVariable> variables) {
+		return DataTypes.BOOLIAN;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(AllTypes datatype,EList<DataSourceVariable> variables) {
-		if(!datatype.id.isEmpty)
+	def dispatch DataTypes checkDatatypeFilterExp(AllTypes datatype,EList<DataSourceVariable> variables) {
+		if(!datatype.id.isNullOrEmpty)
 		{
 			var transform = state.transforms.findFirst[it.name==datatype.id]
 			if(transform !== null)
@@ -248,31 +263,31 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			else
 				return variables.findFirst[it.vname == datatype.id].type.checkDatatypeFilterExp(variables);
 		}
-		else if (!datatype.string.isEmpty)
+		else
 		{
-			return new String();
+			return DataTypes.STRING;
 		}
 	}
 		
-	def dispatch Object checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables) {
 		return variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables);
 	}
 	
 	
-	def dispatch Object checkDatatypeFilterExp(org.example.domainmodel.domainmodel.String datatype,EList<DataSourceVariable> variables) {
-		return new String();
+	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.String datatype,EList<DataSourceVariable> variables) {
+		return DataTypes.STRING;
 	}
 	
 	
-	def dispatch Object checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Number datatype,EList<DataSourceVariable> variables) {
-		return new Integer(0);
+	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Number datatype,EList<DataSourceVariable> variables) {
+		return DataTypes.NUMBER;
 	}
 	
-	def dispatch Object checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Bool datatype,EList<DataSourceVariable> variables) {
-		return new Boolean(true);
+	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Bool datatype,EList<DataSourceVariable> variables) {
+		return DataTypes.BOOLIAN;
 	}
 	
-	def checkDatatypes(Object type1, Object type2)
+	def checkDatatypes(DataTypes type1, DataTypes type2)
 	{
 		if(!type1.equals(type2))
 		{

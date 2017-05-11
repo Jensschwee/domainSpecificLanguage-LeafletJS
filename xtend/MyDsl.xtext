@@ -135,7 +135,7 @@ DataSourceVariable:
 ;
 
 DataSourceVariableType:
-	{String}'string' | {Number}'number'
+	{String}'string' | {Number}'number' | {Bool} 'boolean'
 ;
 
 SourceType:

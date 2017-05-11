@@ -27,6 +27,11 @@ import org.example.domainmodel.domainmodel.DataSource
 import org.example.domainmodel.domainmodel.Value
 import org.example.domainmodel.domainmodel.Style
 import org.example.domainmodel.domainmodel.Styling
+import org.example.domainmodel.domainmodel.MathExp
+import org.example.domainmodel.domainmodel.DataSourceVariableType
+import org.example.domainmodel.domainmodel.BOOLEAN
+import org.example.domainmodel.domainmodel.Bool
+import org.example.domainmodel.domainmodel.impl.BoolImpl
 
 class StateClass {  
     @Property
@@ -144,8 +149,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			{
 				if(!datasoruceVar.contains(variable))
 					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
-			}
-			 
+			}	
 		 }
 	}
 	
@@ -186,4 +190,93 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		state.datasources.add(datasource);
 	}
 	
+	@Check
+	def checkDataTypesForFilter(Filter filter) {
+		var layer =	filter.eContainer() as Layer;
+		filter.expression.checkDatatypeExp(layer.datasource.variables);
+	}
+	
+	def void checkDatatypeExp(LogicExpression exp,EList<DataSourceVariable> variables) {
+		exp.checkDatatypeFilterExp(variables);
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables) {
+		var type1 =	exp.left.checkDatatypeFilterExp(variables);
+		var type2 = exp.right.checkDatatypeFilterExp(variables);
+		type1.checkDatatypes(type2);
+		System.out.println("fisk");
+		return null;
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables){
+		var type1 =	com.left.checkDatatypeFilterExp(variables);
+		var type2 = com.right.checkDatatypeFilterExp(variables);
+		type1.checkDatatypes(type2);
+		return null;
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables){
+		var type1 =	di.left.checkDatatypeFilterExp(variables);
+		var type2 = di.right.checkDatatypeFilterExp(variables);
+		type1.checkDatatypes(type2);
+				return null;
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables){
+		var type1 =	con.left.checkDatatypeFilterExp(variables);
+		var type2 = con.right.checkDatatypeFilterExp(variables);
+		type1.checkDatatypes(type2);
+						return null;
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(MathTerm datatype,EList<DataSourceVariable> variables) {
+		new Integer(0);
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(BOOLEAN datatype,EList<DataSourceVariable> variables) {
+		return new Boolean(true);
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(AllTypes datatype,EList<DataSourceVariable> variables) {
+		if(!datatype.id.isEmpty)
+		{
+			var transform = state.transforms.findFirst[it.name==datatype.id]
+			if(transform !== null)
+			{
+				return transform.checkDatatypeFilterExp(variables);
+			}
+			else
+				return variables.findFirst[it.vname == datatype.id].type.checkDatatypeFilterExp(variables);
+		}
+		else if (!datatype.string.isEmpty)
+		{
+			return new String();
+		}
+	}
+		
+	def dispatch Object checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables) {
+		return variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables);
+	}
+	
+	
+	def dispatch Object checkDatatypeFilterExp(org.example.domainmodel.domainmodel.String datatype,EList<DataSourceVariable> variables) {
+		return new String();
+	}
+	
+	
+	def dispatch Object checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Number datatype,EList<DataSourceVariable> variables) {
+		return new Integer(0);
+	}
+	
+	def dispatch Object checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Bool datatype,EList<DataSourceVariable> variables) {
+		return new Boolean(true);
+	}
+	
+	def checkDatatypes(Object type1, Object type2)
+	{
+		if(!type1.equals(type2))
+		{
+			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
+		}
+	}
 }

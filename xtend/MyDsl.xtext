@@ -74,14 +74,9 @@ AssignmentExp:
 	Set | NumberTypes
 ;
 
-Set:
-	{Set} '[' (items+=AllTypes)? (',' items+=AllTypes)* ']'
-;
-
-// TODO: Integrate with LogicExpression
 // TODO: union
 // TODO: intersect
-// TODO: contain / contains
+// TODO: subtract
 // TODO: all
 
 Transform:
@@ -136,12 +131,36 @@ LogicTerm returns LogicExpression:
 	Comparison | '(' Disjunction ')'
 ;
 
+// TODO: Fix this in generator
 Comparison:
-	left=AllTypes oparator=LogicOparator right=AllTypes
+	LogicComparison | SetComparison
 ;
 
-LogicOparator:
-	{LESS} '<' | {MORE}'>' | {EQ}'=' | {EQLESS}'=<' | {EQMORE}'=>' | {EQLESS}'<=' | {EQMORE}'>=' | {NOT}'!=' | {NOT}'<>'| {NOT}'=!'
+LogicComparison:
+	left=AllTypes operator=LogicComparisonOperator right=AllTypes
+;
+
+// TODO: is ID a declared set variable?
+SetComparison:
+	(left=SetTypes operator=SetComparisonOperator right=ID)
+;
+
+// TODO: is ID a declared set variable?
+SetTypes:
+	set=Set | left=ID
+;
+
+SetComparisonOperator:
+	{CONTAINS} 'contain' | {CONTAINS} 'contains'
+;
+
+Set:
+	{Set} '[' (items+=AllTypes)? (',' items+=AllTypes)* ']'
+;
+
+// TODO: Fix all, Oparator -> Operator, in generator / validator
+LogicComparisonOperator:
+	{LESS} '<' | {MORE} '>' | {EQ} '=' | {EQLESS} '=<' | {EQMORE} '=>' | {EQLESS} '<=' | {EQMORE} '>=' | {NOT} '!=' | {NOT} '<>' | {NOT} '=!'
 ;
 
 DataSource:
@@ -153,7 +172,7 @@ DataSourceVariable:
 ;
 
 SourceType:
-	{GEOJSON}'geojson'
+	{GEOJSON} 'geojson'
 ;
 
 Include:

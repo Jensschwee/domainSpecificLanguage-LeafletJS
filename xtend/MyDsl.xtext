@@ -7,7 +7,7 @@ Model:
 ;
 
 ModelItems:
-	Icon | Styling | Layer| Button | Transform | DataSource
+	Icon | Styling | Layer | Button | Transform | DataSource | Assignment
 ;
 
 LeafletVersion:
@@ -66,6 +66,24 @@ LineOpacity:
 	'lineOpacity' value=INT '%'
 ;
 
+Assignment:
+	'var' name=ID ':=' exp=AssignmentExp
+;
+
+AssignmentExp:
+	Set | NumberTypes
+;
+
+Set:
+	{Set} '[' (items+=AllTypes)? (',' items+=AllTypes)* ']'
+;
+
+// TODO: Integrate with LogicExpression
+// TODO: union
+// TODO: intersect
+// TODO: contain / contains
+// TODO: all
+
 Transform:
 	'transform' name=ID variable=ID 'where' expression=MathTermSimple
 ;
@@ -79,7 +97,7 @@ Filter:
 ;
 
 MapType:
-	{POINT}'point' | {POLYGON}'polygon' | {LINESTRING}'linestring' | {MULTILINESTRING}'multilinestring'  | {MULTIPOINT} 'multipoint' |{GEOMETRYCOLLECTION} 'geometrycollection'| {MULTIPOLYGON} 'multipolygon'
+	{POINT} 'point' | {POLYGON} 'polygon' | {LINESTRING} 'linestring' | {MULTILINESTRING} 'multilinestring' | {MULTIPOINT} 'multipoint' | {GEOMETRYCOLLECTION} 'geometrycollection' | {MULTIPOLYGON} 'multipolygon'
 ;
 
 MathTermSimple returns MathExp:
@@ -90,8 +108,8 @@ MathTermAdv returns MathExp:
   MathFactor ({MathOp.left=current} op=OperatorMultiDiv right=MathFactor)*
 ;
 
-MathFactor  returns MathExp:
-	MathTerm| {Value} 'value' | '('MathTermSimple')'
+MathFactor returns MathExp:
+	MathTerm | {Value} 'value' | '(' MathTermSimple ')'
 ;
 
 OperatorAddMinus:
@@ -131,7 +149,7 @@ DataSource:
 ;
 
 DataSourceVariable:
-	'variable' vname=ID
+	'var' vname=ID
 ;
 
 SourceType:
@@ -225,11 +243,11 @@ Attribution:
 ;
 
 AllTypes:
-	NumberTypes |string=STRING | BOOLEAN | id=ID
+	NumberTypes | string=STRING | BOOLEAN | id=ID
 ;
 
 NumberTypes:
-	double=DOUBLE|int=INTEGER
+	double=DOUBLE | int=INTEGER
 ;
 
 INTEGER:
@@ -240,7 +258,7 @@ DOUBLE:
     value=INTEGER '.' decimals=INT;
 
 BOOLEAN:
-	 {TRUE}'true' | {FALSE}'false'
+	 {TRUE} 'true' | {FALSE} 'false'
 ;
 
 terminal HEXCOLOR:

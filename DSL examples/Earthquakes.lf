@@ -7,18 +7,18 @@ map worldmap startZoom 4 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn tr
 
 source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson" {
 	variable mag to "mag" type number
-	variable tsunami to "tsunami" type number
-	variable magType to "magType" type number
+	variable tsunami to "tsunami" type boolean
+	variable magType to "magType" type string
 	variable cdi to "cdi" type number
-	variable alert to "alert" type number
-	variable status to "status" type number
+	variable alert to "alert" type string
+	variable status to "status" type string
 	variable sig to "sig" type number
-	variable net to "net" type number
-	variable test to "time" type number
+	variable net to "net" type string
+	variable time to "time" type number
 	variable typeof to "type" type string
 }
 
-transform dataYear test where value / (31556926 * 1000) + 1970
+transform dataYear time where value / (31556926 * 1000) + 1970
 
 layer BigEQ from Earthquakes {
 	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")

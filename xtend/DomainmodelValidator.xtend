@@ -32,6 +32,12 @@ import org.example.domainmodel.domainmodel.DataSourceVariableType
 import org.example.domainmodel.domainmodel.BOOLEAN
 import org.example.domainmodel.domainmodel.Bool
 import org.example.domainmodel.domainmodel.impl.BoolImpl
+import org.example.domainmodel.domainmodel.LESS
+import org.example.domainmodel.domainmodel.NOT
+import org.example.domainmodel.domainmodel.EQMORE
+import org.example.domainmodel.domainmodel.EQLESS
+import org.example.domainmodel.domainmodel.EQ
+import org.example.domainmodel.domainmodel.MORE
 
 public enum DataTypes {
     BOOLIAN, STRING, NUMBER
@@ -209,37 +215,38 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		if(exp.right !== null)
 		{
 			var type2 = exp.right.checkDatatypeFilterExp(variables);
-			type1.checkDatatypes(type2);
+			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables){
 		var type1 = com.left.checkDatatypeFilterExp(variables);
-		if(com.right !== null)
+		if(com.right !== null && com.operator !== null)
 		{
 			var type2 = com.right.checkDatatypeFilterExp(variables);
-			type1.checkDatatypes(type2);
+			com.operator.checkDatatypes(type1, type2);
+			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables){
-		var type1 =  di.left.checkDatatypeFilterExp(variables);
+		di.left.checkDatatypeFilterExp(variables);
 		if(di.right !== null)
 		{
-			var type2 = di.right.checkDatatypeFilterExp(variables);
-			type1.checkDatatypes(type2);
+			di.right.checkDatatypeFilterExp(variables);
+			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables){
-		var type1 = con.left.checkDatatypeFilterExp(variables);
+		con.left.checkDatatypeFilterExp(variables);
 		if(con.right !== null)
 		{
-			var type2 = con.right.checkDatatypeFilterExp(variables);
-			type1.checkDatatypes(type2);
+			con.right.checkDatatypeFilterExp(variables);
+			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
@@ -287,11 +294,101 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		return DataTypes.BOOLIAN;
 	}
 	
-	def checkDatatypes(DataTypes type1, DataTypes type2)
+	def Boolean isDatatypesEquals(DataTypes type1, DataTypes type2)
 	{
 		if(!type1.equals(type2))
 		{
 			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
+			return false;
 		}
+		return true;
+	}
+	
+	def dispatch checkDatatypes(LESS less, DataTypes type1, DataTypes type2)
+	{
+		if(type1.isDatatypesEquals(type2))
+		{
+			switch (type1) {
+				case DataTypes.BOOLIAN: {
+					boolErrorMsg("LESS")
+				}
+				case DataTypes.STRING: {
+					stringErrorMsg("LESS");
+				}
+				case NUMBER: {
+					//THIS IS FINE
+				}
+			}
+		}
+	}
+	def dispatch checkDatatypes(MORE less, DataTypes type1, DataTypes type2)
+	{
+		if(type1.isDatatypesEquals(type2))
+		{
+			switch (type1) {
+				case DataTypes.BOOLIAN: {
+					boolErrorMsg("MORE")
+				}
+				case DataTypes.STRING: {
+					stringErrorMsg("MORE");
+				}
+				case NUMBER: {
+					//THIS IS FINE
+				}
+			}
+		}
+	}
+	def dispatch checkDatatypes(EQ eq, DataTypes type1, DataTypes type2)
+	{
+		type1.isDatatypesEquals(type2);		
+	}
+	def dispatch checkDatatypes(EQLESS eqless, DataTypes type1, DataTypes type2)
+	{
+		if(type1.isDatatypesEquals(type2))
+		{
+			switch (type1) {
+				case DataTypes.BOOLIAN: {
+					boolErrorMsg("EQUAL or LESS")
+				}
+				case DataTypes.STRING: {
+					stringErrorMsg("EQUAL or LESS");
+				}
+				case NUMBER: {
+					//THIS IS FINE
+				}
+			}
+		}
+	}
+	def dispatch checkDatatypes(EQMORE eqmore, DataTypes type1, DataTypes type2)
+	{
+		if(type1.isDatatypesEquals(type2))
+		{
+			switch (type1) {
+				case DataTypes.BOOLIAN: {
+					boolErrorMsg("EQUAL or MORE")
+				}
+				case DataTypes.STRING: {
+					stringErrorMsg("EQUAL or MORE");
+				}
+				case NUMBER: {
+					//THIS IS FINE
+				}
+			}
+		}
+	}
+	def dispatch checkDatatypes(NOT not, DataTypes type1, DataTypes type2)
+	{
+		if(!type1.equals(type2))
+			info("These date types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
+	}
+	
+	def stringErrorMsg(String type)
+	{
+		error("Strings can not handle operator " + type, DomainmodelPackage$Literals::FILTER__EXPRESSION);
+	}
+	
+	def boolErrorMsg(String type)
+	{
+		error("Booleans can not handle operator " + type, DomainmodelPackage$Literals::FILTER__EXPRESSION);
 	}
 }

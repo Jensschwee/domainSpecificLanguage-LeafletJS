@@ -257,7 +257,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	}
 	
 	def dispatch CharSequence findSubExpression(Comparison expression, Layer layer)
-	'''«expression.left.findSubExpression(layer)»«expression.oparator.findSubExpression(layer)»«expression.right.findSubExpression(layer)»'''	
+	'''«expression.left.findSubExpression(layer)»«expression.operator.findSubExpression(layer)»«expression.right.findSubExpression(layer)»'''	
 	def dispatch CharSequence findSubExpression(LESS less, Layer layer)''' < '''
 	def dispatch CharSequence findSubExpression(MORE less, Layer layer)''' > '''
 	def dispatch CharSequence findSubExpression(EQ less, Layer layer)''' == '''

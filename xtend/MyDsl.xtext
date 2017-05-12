@@ -119,7 +119,7 @@ LogicTerm returns LogicExpression:
 ;
 
 Comparison:
-	left=AllTypes oparator=LogicOparator right=AllTypes
+	left=AllTypes operator=LogicOparator right=AllTypes
 ;
 
 LogicOparator:

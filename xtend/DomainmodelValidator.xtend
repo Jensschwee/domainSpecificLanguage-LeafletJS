@@ -38,6 +38,7 @@ import org.example.domainmodel.domainmodel.EQMORE
 import org.example.domainmodel.domainmodel.EQLESS
 import org.example.domainmodel.domainmodel.EQ
 import org.example.domainmodel.domainmodel.MORE
+import org.example.domainmodel.domainmodel.LeafletVersion
 
 public enum DataTypes {
     BOOLIAN, STRING, NUMBER
@@ -70,6 +71,15 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 //	}
 
 	var state = new StateClass();
+	
+	@Check
+	def checkLeafletVersion(LeafletVersion vesion)
+	{
+		if(!vesion.version.equals("1.0.3"))
+		{
+			info("Only supports the version 1.0.3", DomainmodelPackage$Literals::LEAFLET_VERSION__VERSION)
+		}
+	}
 
 	def Set<String> findVariabelsForFilter(LogicExpression dis){
 			var variabels = new HashSet<String>();
@@ -211,10 +221,10 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables) {
-		var type1 = exp.left.checkDatatypeFilterExp(variables);
+		exp.left.checkDatatypeFilterExp(variables);
 		if(exp.right !== null)
 		{
-			var type2 = exp.right.checkDatatypeFilterExp(variables);
+			exp.right.checkDatatypeFilterExp(variables);
 			//type1.checkDatatypes(type2);
 		}
 		return null;

@@ -11,7 +11,7 @@ ModelItems:
 ;
 
 LeafletVersion:
-	'leaflet' version=LeafletSupportedVersions
+	'leaflet' version=STRING
 ;
 
 Button:
@@ -253,8 +253,4 @@ terminal HEXCOLOR:
 
 terminal fragment HEXCHAR:
 	('a'..'f'|'A'..'F'|'0'..'9')
-;
-
-LeafletSupportedVersions:
-	version=STRING
 ;

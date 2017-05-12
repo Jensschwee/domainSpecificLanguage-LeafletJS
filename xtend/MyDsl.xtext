@@ -1,13 +1,13 @@
-grammar org.example.domainmodel.Domainmodel with org.eclipse.xtext.common.Terminals
+grammar dk.sdu.mmmi.msd.LeafletDSL with org.eclipse.xtext.common.Terminals
 
-generate domainmodel "http://www.example.org/domainmodel/Domainmodel"
+generate leafletDSL "http://www.sdu.dk/mmmi/msd/LeafletDSL"
 
 Model:
     leafletVersion=LeafletVersion? includes+=Include* map=Map modelItems+=ModelItems*
 ;
 
 ModelItems:
-	Icon | Styling| Layer| Button | Transform | DataSource
+	Icon | Styling | Layer| Button | Transform | DataSource
 ;
 
 LeafletVersion:

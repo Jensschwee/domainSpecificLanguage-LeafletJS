@@ -268,7 +268,11 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 				return transform.checkDatatypeFilterExp(variables);
 			}
 			else
-				return variables.findFirst[it.vname == datatype.id].type.checkDatatypeFilterExp(variables);
+			{
+				var type = variables.findFirst[it.vname == datatype.id].type;
+				if(type !== null)
+					return type.checkDatatypeFilterExp(variables);
+			}
 		}
 		else
 		{
@@ -277,7 +281,13 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	}
 		
 	def dispatch DataTypes checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables) {
-		return variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables);
+		var datatype = variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables);
+		if(!datatype.equals(DataTypes.NUMBER))
+		{
+			var datasoruce =	variables.findFirst[it.vname == transform.variable].eContainer as DataSource;
+			error("Transform " + transform.name + " can not use this input. \n Only supports numbers. \n variable " + transform.variable + " is not a number in the data source " + datasoruce.name, DomainmodelPackage$Literals::FILTER__EXPRESSION);
+		}
+		return datatype;
 	}
 	
 	

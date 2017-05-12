@@ -160,10 +160,13 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	
 	@Check
 	def checkFilterDatasoruces(Filter filter) {
-		if(filter.expression !== null )
+		var expression = ( filter.filterElements.findFirst[it instanceof Disjunction] as LogicExpression)
+		
+		if(expression !== null )
 		{
+			
 			var layer =	filter.eContainer() as Layer;
-			var variables =  filter.expression.findVariabelsForFilter;
+			var variables =  expression.findVariabelsForFilter;
 			var datasoruceVar = new HashSet<String>;
 			
 			for (variable : layer.datasource.variables)
@@ -173,9 +176,9 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			for (variable : variables)
 			{
 				if(!datasoruceVar.contains(variable))
-					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
+					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);		 	 
 			}
-			filter.expression.checkDatatypeExp(layer.datasource.variables);
+			expression.checkDatatypeExp(layer.datasource.variables);
 		 }
 	}
 	
@@ -213,7 +216,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	
 	@Check
 	def addDataSourceToList(DataSource datasource) {
-		state.datasources.add(datasource);
+		state.datasources.add(datasource);		
 	}
 	
 	def void checkDatatypeExp(LogicExpression exp,EList<DataSourceVariable> variables) {
@@ -295,7 +298,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		if(!datatype.equals(DataTypes.NUMBER))
 		{
 			var datasoruce =	variables.findFirst[it.vname == transform.variable].eContainer as DataSource;
-			error("Transform " + transform.name + " can not use this input. \n Only supports numbers. \n variable " + transform.variable + " is not a number in the data source " + datasoruce.name, DomainmodelPackage$Literals::FILTER__EXPRESSION);
+			error("Transform " + transform.name + " can not use this input. \n Only supports numbers. \n variable " + transform.variable + " is not a number in the data source " + datasoruce.name, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);
 		}
 		return datatype;
 	}
@@ -318,7 +321,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	{
 		if(!type1.equals(type2))
 		{
-			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
+			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);		 	 
 			return false;
 		}
 		return true;
@@ -399,16 +402,22 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	def dispatch checkDatatypes(NOT not, DataTypes type1, DataTypes type2)
 	{
 		if(!type1.equals(type2))
-			info("These date types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__EXPRESSION);		 	 
+			info("These date types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);		 	 
 	}
 	
 	def stringErrorMsg(String type)
 	{
-		error("Strings can not handle operator " + type, DomainmodelPackage$Literals::FILTER__EXPRESSION);
+		error("Strings can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);
 	}
 	
 	def boolErrorMsg(String type)
 	{
-		error("Booleans can not handle operator " + type, DomainmodelPackage$Literals::FILTER__EXPRESSION);
+		error("Booleans can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);
+	}
+	
+	@Check
+	def checkDataSourceVariable(DataSourceVariable variable)
+	{
+		var dataSource = variable.eContainer as DataSource;
 	}
 }

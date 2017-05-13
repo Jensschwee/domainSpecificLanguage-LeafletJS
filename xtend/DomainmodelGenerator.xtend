@@ -223,42 +223,46 @@ class DomainmodelGenerator extends AbstractGenerator {
 		«FOR filter : layer.filter»
 			«var expressionList = filter.filterElements.filter(LogicExpression)»
 			«var mapTypeList = filter.filterElements.filter(FilterMapType)»
+			function layer«layer.name»Filter«state.counter»(feature) {
 			«IF expressionList.size > 0»
 				«var expression = expressionList.get(0)»
-				«var variabels =  expression.findVariabelsForFilter»
-				function layer«layer.name»Filter«state.counter»(feature) {
-				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties["«str»"] === undefined «ENDFOR»)
-				            return false;
-				            «IF(mapTypeList.size > 0)»
-				            «var mapType = mapTypeList.get(0)»
-			            if (feature.geometry.type !== "«mapType.mapType.maptypeGenerate»")
-			            	return false;
-				            «ENDIF»
-				         «expression.generateFilterExpression»
+            	«IF(mapTypeList.size > 0)»
+        		    «mapTypeList.get(0).generateMapTypeInExpression»
+				«ENDIF»
+				«expression.generateFilterExpression»
 				«state.setCounter(state.counter + 1)»
 			«ELSEIF mapTypeList.size > 0»
-				«var mapType = mapTypeList.get(0)»
-				function layer«layer.name»Filter«state.counter»(feature) {
-				 				            «IF(mapType !== null)»
-			            if (feature.geometry.type === "«mapType.mapType.maptypeGenerate»")
-			            	return true;
-		            «ENDIF»
-				
+				«mapTypeList.get(0).generateMapTypeOnly»
 			«ENDIF»
-			        return false;
+				return false;
 			}
 			
 		«ENDFOR»
 	«ENDIF»
 	'''
 	
+	def generateMapTypeInExpression(FilterMapType mapType)'''
+	    if (feature !== undefined  && feature.geometry !== undefined && feature.geometry.type !== undefined &&  feature.geometry.type !== "«mapType.mapType.maptypeGenerate»")
+	    	return false;
+	'''
+	
+	def generateMapTypeOnly(FilterMapType mapType)'''
+		if (feature === undefined  ||  feature.geometry === undefined || feature.geometry.type === undefined)
+			return false;
+		if (feature.geometry.type === "«mapType.mapType.maptypeGenerate»")
+			return true;
+	'''
+	
 	def generateFilterExpression(LogicExpression expression)'''
+	«var variabels =  expression.findVariabelsForFilter»
+		if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties["«str»"] === undefined «ENDFOR»)
+			return false;
 	«var filter =expression.eContainer() as Filter»
 	«var layer =filter.eContainer() as Layer»
-	if(«expression.findSubExpression(layer)»)
-	{
-		return true;
-	}
+		if(«expression.findSubExpression(layer)»)
+		{
+			return true;
+		}
 	'''
 	
 	def dispatch CharSequence findSubExpression(LogicExpression expression, Layer layer)
@@ -459,12 +463,12 @@ class DomainmodelGenerator extends AbstractGenerator {
 	«ENDIF»
 	loadJSON("«dataSoruce.getSourceLocation»",
 		(function (data) {
-        «dataSoruce.name» = JSON.parse(data);
+			«dataSoruce.name» = JSON.parse(data);
             «FOR l : layers»
 				«IF l.filter.size() !== 0»
-					layer«l.name» = L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter[it instanceof LogicExpression || it instanceof FilterStyle] SEPARATOR ","»«FE.generateFilterElements(l,1)»«ENDFOR» «l.filter.get(0).generateCustumPointIcon»});
+						layer«l.name» = L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter[it instanceof LogicExpression || it instanceof FilterStyle] SEPARATOR ","»«FE.generateFilterElements(l,1)»«ENDFOR» «l.filter.get(0).generateCustumPointIcon»});
             	«ELSE»
-				layer«l.name» = L.geoJson(«l.datasource.name»);
+						layer«l.name» = L.geoJson(«l.datasource.name»);
             	«ENDIF»
             	«state.counter = 0»
 	            	«FOR filter : l.filter»

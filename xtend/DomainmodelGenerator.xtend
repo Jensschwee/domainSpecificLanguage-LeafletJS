@@ -178,6 +178,17 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 	'''
 
+	def dispatch generateModelItemMember(Assignment assignment)
+	'''
+	var «assignment.name» = «assignment.exp.generateAssignment»;
+	'''
+
+	def dispatch generateAssignment(dk.sdu.mmmi.msd.leafletDSL.Set set)
+	'''«set.generateSet»'''
+
+	def dispatch generateAssignment(NumberTypes num)
+	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+
 	def dispatch generateModelItemMember(Styling style) '''
 	function style«style.name»() {
 		«IF style.base != null»
@@ -327,7 +338,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	'''containedWithinSet(«setVariable», feature.properties.«variableId»)'''
 
 	def generateSet(dk.sdu.mmmi.msd.leafletDSL.Set set)
-	'''[«FOR item : set.items SEPARATOR ','» «item.generateSetItem»«ENDFOR» ]'''
+	'''[«FOR item : set.items SEPARATOR ', '»«item.generateSetItem»«ENDFOR»]'''
 
 	def dispatch CharSequence generateSetItem(AllSetTypes type)
 	'''«IF (type.s !== null)»"«type.s»"«ENDIF»'''

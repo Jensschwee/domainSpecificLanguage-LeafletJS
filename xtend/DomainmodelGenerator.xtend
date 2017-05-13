@@ -103,6 +103,11 @@ import dk.sdu.mmmi.msd.leafletDSL.CONTAINS
 import dk.sdu.mmmi.msd.leafletDSL.SetComparisonOperator
 import dk.sdu.mmmi.msd.leafletDSL.SetTypes
 import dk.sdu.mmmi.msd.leafletDSL.AllSetTypes
+import dk.sdu.mmmi.msd.leafletDSL.SetExpression
+import dk.sdu.mmmi.msd.leafletDSL.SetExp
+import dk.sdu.mmmi.msd.leafletDSL.UNION
+import dk.sdu.mmmi.msd.leafletDSL.INTERSECT
+import dk.sdu.mmmi.msd.leafletDSL.DIFF
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -284,7 +289,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	def dispatch CharSequence findSubExpression(NOT less)''' != '''
 
 	def dispatch CharSequence findSubExpression(SetComparison expression) {
-		'''(«generateSetComparison(expression.left, expression.operator, expression.right)»)'''
+		'''(«expression.generateSetExpression»)'''
 	}
 
 	def dispatch CharSequence findSubExpression(Disjunction expression)
@@ -316,26 +321,30 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	'''transform«exp.name»(feature.properties.«exp.variable»)'''
 
 
-	def generateSetComparison(String variableId, SetComparisonOperator setComparisonOp, SetTypes setTypes) {
-		switch setComparisonOp {
-			CONTAINS : return generateSetContains(setTypes, variableId)
+	def dispatch CharSequence generateSetExpression(SetComparison expression) {
+		switch expression.operator {
+			CONTAINS: return '''containedWithinSet(«expression.right.generateSetExpression», feature.properties.«expression.left»)'''
+			default: return ''' '''
 		}
 	}
 
-	def generateSetContains(SetTypes setTypes, String variableId) {
-		if(setTypes.set !== null) {
-			return generateSetContainsDirect(setTypes.set, variableId)
-		}
-		else if(setTypes.id !== null) {
-			return generateSetContainsIndirect(setTypes.id, variableId)
+	def dispatch CharSequence generateSetExpression(SetExpression expression) {
+		switch expression.op {
+			UNION: return '''unionSets(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
+			INTERSECT: return '''intersectSets(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
+			DIFF: return '''subtractSets(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
+			default: return ''' '''
 		}
 	}
 
-	def generateSetContainsDirect(dk.sdu.mmmi.msd.leafletDSL.Set set, String variableId)
-	'''containedWithinSet(«set.generateSet», feature.properties.«variableId»)'''
-
-	def generateSetContainsIndirect(String setVariable, String variableId)
-	'''containedWithinSet(assignment«setVariable», feature.properties.«variableId»)'''
+	def dispatch CharSequence generateSetExpression(SetTypes expression) {
+		if(expression.set !== null) {
+			return expression.set.generateSet
+		}
+		else if(expression.id !== null) {
+			return "assignment" + expression.id
+		}
+	}
 
 	def generateSet(dk.sdu.mmmi.msd.leafletDSL.Set set)
 	'''[«FOR item : set.items SEPARATOR ', '»«item.generateSetItem»«ENDFOR»]'''

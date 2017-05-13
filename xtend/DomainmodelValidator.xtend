@@ -41,6 +41,12 @@ import org.example.domainmodel.domainmodel.MORE
 import org.example.domainmodel.domainmodel.LeafletVersion
 import org.example.domainmodel.domainmodel.FilterMapType
 import org.example.domainmodel.domainmodel.FilterStyle
+import org.example.domainmodel.domainmodel.LineColor
+import org.example.domainmodel.domainmodel.LineWidth
+import org.example.domainmodel.domainmodel.BackgroundColor
+import org.example.domainmodel.domainmodel.BackgroundOpacity
+import org.example.domainmodel.domainmodel.PointerIcon
+import org.example.domainmodel.domainmodel.LineOpacity
 
 public enum DataTypes {
     BOOLIAN, STRING, NUMBER
@@ -219,6 +225,54 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		{
 			styling.base.checkSubStyle(stylings);
 		}
+		styling.stylingCSSElements;
+	}
+	
+	def stylingCSSElements(Styling styling){
+		if(styling.styles.size > 1)
+		{
+			var lineColor = styling.styles.filter(LineColor);
+			if(lineColor.size > 1)
+			{
+				var index = styling.styles.indexOf(lineColor.get(lineColor.size-1));
+				error("Style LineColor can only be defined once", DomainmodelPackage$Literals::STYLING__STYLES, index);		 	 
+			}
+			
+			var lineWidth = styling.styles.filter(LineWidth);
+			if(lineWidth.size > 1)
+			{
+				var index = styling.styles.indexOf(lineWidth.get(lineWidth.size-1));
+				error("Style LineWidth can only be defined once", DomainmodelPackage$Literals::STYLING__STYLES, index);		 	 
+			}
+			
+			var backgroundColor = styling.styles.filter(BackgroundColor);
+			if(backgroundColor.size > 1)
+			{
+				var index = styling.styles.indexOf(backgroundColor.get(backgroundColor.size-1));
+				error("Style BackgroundColor can only be defined once", DomainmodelPackage$Literals::STYLING__STYLES, index);		 	 
+			}
+			
+			var backgroundOpacity = styling.styles.filter(BackgroundOpacity);
+			if(backgroundOpacity.size > 1)
+			{
+				var index = styling.styles.indexOf(backgroundOpacity.get(backgroundOpacity.size-1));
+				error("Style BackgroundOpacity can only be defined once", DomainmodelPackage$Literals::STYLING__STYLES, index);		 	 
+			}
+			
+			var pointerIcon = styling.styles.filter(PointerIcon);
+			if(pointerIcon.size > 1)
+			{
+				var index = styling.styles.indexOf(pointerIcon.get(pointerIcon.size-1));
+				error("Style PointerIcon can only be defined once", DomainmodelPackage$Literals::STYLING__STYLES, index);		 	 
+			}
+			
+			var lineOpacity = styling.styles.filter(LineOpacity);
+			if(lineOpacity.size > 1)
+			{
+				var index = styling.styles.indexOf(lineOpacity.get(lineOpacity.size-1));
+				error("Style LineOpacity can only be defined once", DomainmodelPackage$Literals::STYLING__STYLES, index);		 	 
+			}
+		}
 	}
 	
 	def checkSubStyle(Styling styling, Set<String> stylings)
@@ -262,7 +316,6 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		{
 			var type2 = com.right.checkDatatypeFilterExp(variables, expressionIndex);
 			com.operator.checkDatatypes(type1, type2, expressionIndex);
-			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
@@ -272,7 +325,6 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		if(di.right !== null)
 		{
 			di.right.checkDatatypeFilterExp(variables, expressionIndex);
-			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
@@ -282,7 +334,6 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		if(con.right !== null)
 		{
 			con.right.checkDatatypeFilterExp(variables, expressionIndex);
-			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}

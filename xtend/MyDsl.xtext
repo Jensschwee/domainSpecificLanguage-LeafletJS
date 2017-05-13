@@ -131,7 +131,6 @@ LogicTerm returns LogicExpression:
 	Comparison | '(' Disjunction ')'
 ;
 
-// TODO: Fix this in generator
 Comparison:
 	LogicComparison | SetComparison
 ;

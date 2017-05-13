@@ -144,126 +144,126 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 
 	def generateLeafletHTML(Model model)'''
-		«generateStaticHeader()»
+		Â«generateStaticHeader()Â»
 
-		«generateInclude(model.includes)»
+		Â«generateInclude(model.includes)Â»
 
-		«generateStaticHTMLBODY()»
+		Â«generateStaticHTMLBODY()Â»
 
-			«generateMaps(model.map)»
+			Â«generateMaps(model.map)Â»
 
-			«generateModelItem(model.modelItems)»
+			Â«generateModelItem(model.modelItems)Â»
 
-		«generateStatickFooter()»'''
+		Â«generateStatickFooter()Â»'''
 
 	def generateModelItem(EList<ModelItems> modelItems)'''
-	«FOR mi : modelItems»
-		«generateModelItemMember(mi)»
-	«ENDFOR»
+	Â«FOR mi : modelItemsÂ»
+		Â«generateModelItemMember(mi)Â»
+	Â«ENDFORÂ»
 	'''
 
 	def dispatch generateModelItemMember(Icon icon) '''
-	function getIcon«icon.name»() {
+	function getIconÂ«icon.nameÂ»() {
 	    return L.icon({
-	        iconUrl: '«icon.source»',
-	        iconSize: [«icon.size», «icon.size»]
+	        iconUrl: 'Â«icon.sourceÂ»',
+	        iconSize: [Â«icon.sizeÂ», Â«icon.sizeÂ»]
 	    });
 	}
 
-	function getEasybuttonImage«icon.name»() {
-		var height = «icon.size»;
-		var width = «icon.size»;
-		var imageSrc = '«icon.source»';
+	function getEasybuttonImageÂ«icon.nameÂ»() {
+		var height = Â«icon.sizeÂ»;
+		var width = Â«icon.sizeÂ»;
+		var imageSrc = 'Â«icon.sourceÂ»';
 		return '<div><img src="' + imageSrc + '" width="' + width + '" height="' + height + '"/></div>';
 	}
 	'''
 
 	def dispatch generateModelItemMember(Assignment assignment)
 	'''
-	var «assignment.name» = «assignment.exp.generateAssignment»;
+	var assignmentÂ«assignment.nameÂ» = Â«assignment.exp.generateAssignmentÂ»;
 	'''
 
 	def dispatch generateAssignment(dk.sdu.mmmi.msd.leafletDSL.Set set)
-	'''«set.generateSet»'''
+	'''Â«set.generateSetÂ»'''
 
 	def dispatch generateAssignment(NumberTypes num)
-	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+	'''Â«IF(num.int !== null)Â»Â«printINTEGER(num.int)Â»Â«ELSEIF(num.double !== null)Â»Â«printDOUBLE(num.double)Â»Â«ENDIFÂ»'''
 
 	def dispatch generateModelItemMember(Styling style) '''
-	function style«style.name»() {
-		«IF style.base != null»
-			var style = style«style.base.name»();
-		«ELSE»
+	function styleÂ«style.nameÂ»() {
+		Â«IF style.base != nullÂ»
+			var style = styleÂ«style.base.nameÂ»();
+		Â«ELSEÂ»
 			var style = {};
-		«ENDIF»
-	«FOR styleElement : style.getStyles»	«generateCSSElement(styleElement)»
-    «ENDFOR»
+		Â«ENDIFÂ»
+	Â«FOR styleElement : style.getStylesÂ»	Â«generateCSSElement(styleElement)Â»
+    Â«ENDFORÂ»
 		return style;
 	}
 	'''
 
 	def dispatch generateCSSElement(LineColor style)
 	'''
-		style["color"] = "«style.color»";
+		style["color"] = "Â«style.colorÂ»";
 	'''
 
 	def dispatch generateCSSElement(LineWidth style)
 	'''
-		style["weight"] = «style.value»;
+		style["weight"] = Â«style.valueÂ»;
 	'''
 
 	def dispatch generateCSSElement(BackgroundColor style)
 	'''
-		style["fillColor"] = "«style.color»";
+		style["fillColor"] = "Â«style.colorÂ»";
 	'''
 
 	def dispatch generateCSSElement(BackgroundOpacity style)
 	'''
-		style["fillOpacity"] = «style.value/100.0»;
+		style["fillOpacity"] = Â«style.value/100.0Â»;
 	'''
 
 	def dispatch generateCSSElement(LineOpacity style)
 	'''
-		style["opacity"] = «style.value/100.0»;
+		style["opacity"] = Â«style.value/100.0Â»;
 	'''
 
 	def dispatch generateCSSElement(PointerIcon style)
 	'''
-		style["pointerIcon"] = getIcon«style.icon.name»();
+		style["pointerIcon"] = getIconÂ«style.icon.nameÂ»();
 	'''
 
 	def dispatch generateModelItemMember(Layer layer) '''
-	«IF layer.filter.size() !== 0»
-		«state.setCounter(1)»
-		«FOR filter : layer.filter»
-			«IF filter.expression !== null »
-				«var variabels =  filter.expression.findVariabelsForFilter»
-				function layer«layer.name»Filter«state.counter»(feature) {
-				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties.«str» === undefined «ENDFOR»)
+	Â«IF layer.filter.size() !== 0Â»
+		Â«state.setCounter(1)Â»
+		Â«FOR filter : layer.filterÂ»
+			Â«IF filter.expression !== null Â»
+				Â«var variabels =  filter.expression.findVariabelsForFilterÂ»
+				function layerÂ«layer.nameÂ»FilterÂ«state.counterÂ»(feature) {
+				        if (feature == undefined || feature.properties === undefined Â«IF variabels.size()  !== 0Â»||Â«ENDIFÂ» Â«FOR str : variabels SEPARATOR "|| "Â»!feature.properties.Â«strÂ» === undefined Â«ENDFORÂ»)
 				            return false;
-				            «IF(filter.mapType !== null)»
-				            if (feature.geometry.type !== "«filter.mapType.maptypeGenerate»")
+				            Â«IF(filter.mapType !== null)Â»
+				            if (feature.geometry.type !== "Â«filter.mapType.maptypeGenerateÂ»")
 				                        return false;
-				            «ENDIF»
-				         «filter.expression.generateFilterExpression»
+				            Â«ENDIFÂ»
+				         Â«filter.expression.generateFilterExpressionÂ»
 				        return false;
 				}
-				«state.setCounter(state.counter + 1)»
-			«ELSEIF filter.mapType !== null»
-				 function layer«layer.name»Filter«state.counter»(feature) {
-				 				            «IF(filter.mapType !== null)»
-				 				            if (feature.geometry.type === "«filter.mapType.maptypeGenerate»")
+				Â«state.setCounter(state.counter + 1)Â»
+			Â«ELSEIF filter.mapType !== nullÂ»
+				 function layerÂ«layer.nameÂ»FilterÂ«state.counterÂ»(feature) {
+				 				            Â«IF(filter.mapType !== null)Â»
+				 				            if (feature.geometry.type === "Â«filter.mapType.maptypeGenerateÂ»")
 				 				                        return true;
-				 				            «ENDIF»
+				 				            Â«ENDIFÂ»
 				 				        return false;
 				 }
-			«ENDIF»
-		«ENDFOR»
-	«ENDIF»
+			Â«ENDIFÂ»
+		Â«ENDFORÂ»
+	Â«ENDIFÂ»
 	'''
 
 	def generateFilterExpression(LogicExpression expression)'''
-	if(«expression.findSubExpression»)
+	if(Â«expression.findSubExpressionÂ»)
 	{
 		return true;
 	}
@@ -275,7 +275,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 
 	def dispatch CharSequence findSubExpression(LogicComparison expression)
-	'''«expression.left.findSubExpression»«expression.operator.findSubExpression»«expression.right.findSubExpression»'''
+	'''Â«expression.left.findSubExpressionÂ»Â«expression.operator.findSubExpressionÂ»Â«expression.right.findSubExpressionÂ»'''
 	def dispatch CharSequence findSubExpression(LESS less)''' < '''
 	def dispatch CharSequence findSubExpression(MORE less)''' > '''
 	def dispatch CharSequence findSubExpression(EQ less)''' == '''
@@ -284,25 +284,25 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	def dispatch CharSequence findSubExpression(NOT less)''' != '''
 
 	def dispatch CharSequence findSubExpression(SetComparison expression) {
-		'''(«generateSetComparison(expression.left, expression.operator, expression.right)»)'''
+		'''(Â«generateSetComparison(expression.left, expression.operator, expression.right)Â»)'''
 	}
 
 	def dispatch CharSequence findSubExpression(Disjunction expression)
-	'''(«expression.left.findSubExpression» && «expression.right.findSubExpression»)'''
+	'''(Â«expression.left.findSubExpressionÂ» && Â«expression.right.findSubExpressionÂ»)'''
 
 	def dispatch CharSequence findSubExpression(Conjunction expression)
-	'''(«expression.left.findSubExpression» || «expression.right.findSubExpression»)'''
+	'''(Â«expression.left.findSubExpressionÂ» || Â«expression.right.findSubExpressionÂ»)'''
 
 	def dispatch CharSequence findSubExpression(AllTypes type)
-	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression»«ELSE»feature.properties.«type.id»«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
+	'''Â«IF(type.id !== null)Â»Â«var transform = state.transforms.findFirst[it.name==type.id]Â»Â«IF(transform !== null)Â»Â«transform.findSubExpressionÂ»Â«ELSEÂ»feature.properties.Â«type.idÂ»Â«ENDIFÂ»Â«ELSEIF (type.string !== null)Â»"Â«type.stringÂ»"Â«ENDIFÂ»'''
 
-	def dispatch CharSequence findSubExpression(BOOLEAN bool)'''«printBOOLEAN(bool)»'''
+	def dispatch CharSequence findSubExpression(BOOLEAN bool)'''Â«printBOOLEAN(bool)Â»'''
 
 	def dispatch CharSequence findSubExpression(NumberTypes num)
-	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+	'''Â«IF(num.int !== null)Â»Â«printINTEGER(num.int)Â»Â«ELSEIF(num.double !== null)Â»Â«printDOUBLE(num.double)Â»Â«ENDIFÂ»'''
 
 	def dispatch CharSequence findSubExpression(LogicExp exp)
-	'''«IF exp.op.equals("and")»(«ENDIF»«exp.left.findSubExpression»«IF exp.op.equals("and")» && «ELSEIF exp.op.equals("or")» || «ENDIF»«exp.right.findSubExpression»«IF exp.op.equals("and")»)«ENDIF»'''
+	'''Â«IF exp.op.equals("and")Â»(Â«ENDIFÂ»Â«exp.left.findSubExpressionÂ»Â«IF exp.op.equals("and")Â» && Â«ELSEIF exp.op.equals("or")Â» || Â«ENDIFÂ»Â«exp.right.findSubExpressionÂ»Â«IF exp.op.equals("and")Â»)Â«ENDIFÂ»'''
 
 	def dispatch CharSequence findSubExpression(MathTerm exp)
 	{
@@ -313,7 +313,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 
 	def dispatch CharSequence findSubExpression(Transform exp)
-	'''transform«exp.name»(feature.properties.«exp.variable»)'''
+	'''transformÂ«exp.nameÂ»(feature.properties.Â«exp.variableÂ»)'''
 
 
 	def generateSetComparison(String variableId, SetComparisonOperator setComparisonOp, SetTypes setTypes) {
@@ -327,27 +327,27 @@ class LeafletDSLGenerator extends AbstractGenerator {
 			return generateSetContainsDirect(setTypes.set, variableId)
 		}
 		else if(setTypes.id !== null) {
-			return generateSetContainsDirect(setTypes.set, variableId)
+			return generateSetContainsIndirect(setTypes.id, variableId)
 		}
 	}
 
 	def generateSetContainsDirect(dk.sdu.mmmi.msd.leafletDSL.Set set, String variableId)
-	'''containedWithinSet(«set.generateSet», feature.properties.«variableId»)'''
+	'''containedWithinSet(Â«set.generateSetÂ», feature.properties.Â«variableIdÂ»)'''
 
 	def generateSetContainsIndirect(String setVariable, String variableId)
-	'''containedWithinSet(«setVariable», feature.properties.«variableId»)'''
+	'''containedWithinSet(assignmentÂ«setVariableÂ», feature.properties.Â«variableIdÂ»)'''
 
 	def generateSet(dk.sdu.mmmi.msd.leafletDSL.Set set)
-	'''[«FOR item : set.items SEPARATOR ', '»«item.generateSetItem»«ENDFOR»]'''
+	'''[Â«FOR item : set.items SEPARATOR ', 'Â»Â«item.generateSetItemÂ»Â«ENDFORÂ»]'''
 
 	def dispatch CharSequence generateSetItem(AllSetTypes type)
-	'''«IF (type.s !== null)»"«type.s»"«ENDIF»'''
+	'''Â«IF (type.s !== null)Â»"Â«type.sÂ»"Â«ENDIFÂ»'''
 
 	def dispatch CharSequence generateSetItem(BOOLEAN bool)
-	'''«printBOOLEAN(bool)»'''
+	'''Â«printBOOLEAN(bool)Â»'''
 
 	def dispatch CharSequence generateSetItem(NumberTypes num)
-	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+	'''Â«IF(num.int !== null)Â»Â«printINTEGER(num.int)Â»Â«ELSEIF(num.double !== null)Â»Â«printDOUBLE(num.double)Â»Â«ENDIFÂ»'''
 
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
@@ -375,7 +375,9 @@ class LeafletDSLGenerator extends AbstractGenerator {
 
 
 	def dispatch void findVariable(SetComparison con, Set<String> variabels){
-		// TODO: Do something here.
+		if(con.left !== null) {
+			variabels.add(con.left);
+		}
 	}
 
 	def dispatch void findVariable(LogicExp le, Set<String> variabels){
@@ -404,7 +406,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 
 	def dispatch generateModelItemMember(Button button)
-	'''«generateButton(button.btn)»
+	'''Â«generateButton(button.btn)Â»
 	'''
 
 	def findTransformVariables(Transform transform, Set<String> variabels)
@@ -439,31 +441,31 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 
 	def generateButton(ToggleButton buttons)'''
-		var toogle«buttons.layer.name» = L.easyButton({
+		var toogleÂ«buttons.layer.nameÂ» = L.easyButton({
 	id: 'easy-button',
-    position: '«generateLocation(buttons.location)»',
+    position: 'Â«generateLocation(buttons.location)Â»',
     states: [{
-        icon: getEasybuttonImage«buttons.icon.name»(),
+        icon: getEasybuttonImageÂ«buttons.icon.nameÂ»(),
         stateName: 'toggled',
-        title: '«buttons.layer.name»',
+        title: 'Â«buttons.layer.nameÂ»',
         onClick: function (btn) {
         	btn.state('detoggled');
             btn.button.style.backgroundColor = 'white';
-            «state.mapName».removeLayer(layer«buttons.layer.name»);
+            Â«state.mapNameÂ».removeLayer(layerÂ«buttons.layer.nameÂ»);
         }
     },
 	{
-        icon: getEasybuttonImage«buttons.icon.name»(),
+        icon: getEasybuttonImageÂ«buttons.icon.nameÂ»(),
         stateName: 'detoggled',
-        title: '«buttons.layer.name»',
+        title: 'Â«buttons.layer.nameÂ»',
         onClick: function (btn) {
 					btn.state('toggled');
 					btn.button.style.backgroundColor = 'grey';
-					«state.mapName».addLayer(layer«buttons.layer.name»);
+					Â«state.mapNameÂ».addLayer(layerÂ«buttons.layer.nameÂ»);
 				}
 			}]
-		}).addTo(«state.mapName»);
-		toogle«buttons.layer.name».button.style.backgroundColor = 'grey';
+		}).addTo(Â«state.mapNameÂ»);
+		toogleÂ«buttons.layer.nameÂ».button.style.backgroundColor = 'grey';
 	'''
 
 	def dispatch generateLocation(TOPRIGHT location) '''topright'''
@@ -472,13 +474,13 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	def dispatch generateLocation(BOTTOMRIGHT location) '''bottomright'''
 
 	def dispatch generateModelItemMember(Transform transform) '''
-	 function transform«transform.name»(value) {
-	 	return «transform.expression.generateTransformExp»;
+	 function transformÂ«transform.nameÂ»(value) {
+	 	return Â«transform.expression.generateTransformExpÂ»;
 	 }
 	'''
 
 	def dispatch CharSequence generateTransformExp(MathOp exp)
-	'''(«exp.left.generateTransformExp»«exp.op.generateTransformExp»«exp.right.generateTransformExp»)'''
+	'''(Â«exp.left.generateTransformExpÂ»Â«exp.op.generateTransformExpÂ»Â«exp.right.generateTransformExpÂ»)'''
 
 	def dispatch CharSequence generateTransformExp(MINUS op)'''-'''
 	def dispatch CharSequence generateTransformExp(PLUS op)'''+'''
@@ -488,75 +490,75 @@ class LeafletDSLGenerator extends AbstractGenerator {
 
 
 	def dispatch CharSequence generateTransformExp(MathTerm exp)
-	'''«IF (exp.transform !== null)»transform«exp.transform.name»(value)«ENDIF»'''
+	'''Â«IF (exp.transform !== null)Â»transformÂ«exp.transform.nameÂ»(value)Â«ENDIFÂ»'''
 
 	def dispatch CharSequence generateTransformExp(NumberTypes num)
-	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+	'''Â«IF(num.int !== null)Â»Â«printINTEGER(num.int)Â»Â«ELSEIF(num.double !== null)Â»Â«printDOUBLE(num.double)Â»Â«ENDIFÂ»'''
 
 
 	def dispatch generateModelItemMember(DataSource dataSoruce) '''
-	var «dataSoruce.name» = null;
-	«var layers = state.layers.filter[it.datasource.name === dataSoruce.name]»
-	«IF layers !== null»
-		«FOR l : layers»
-			var layer«l.name» = null;
-		«ENDFOR»
-	«ENDIF»
-	loadJSON("«dataSoruce.getSourceLocation»",
+	var Â«dataSoruce.nameÂ» = null;
+	Â«var layers = state.layers.filter[it.datasource.name === dataSoruce.name]Â»
+	Â«IF layers !== nullÂ»
+		Â«FOR l : layersÂ»
+			var layerÂ«l.nameÂ» = null;
+		Â«ENDFORÂ»
+	Â«ENDIFÂ»
+	loadJSON("Â«dataSoruce.getSourceLocationÂ»",
 		(function (data) {
-        «dataSoruce.name» = JSON.parse(data);
-            «FOR l : layers»
-				«IF l.filter.size() !== 0»
-	        		«IF l.filter.get(0).expression !== null»
-	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
-	        			«ENDIF»
-        			«ELSEIF l.filter.get(0).mapType !== null»
-	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
-	        			«ENDIF»
-	        		«ELSE»
-	        			«IF l.filter.get(0).style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { style: style«l.filter.get(0).style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name» «l.filter.get(0).generateCustumPointIcon»);
-	        			«ENDIF»
-	        		«ENDIF»
-            	«ELSE»
-				layer«l.name» = L.geoJson(«l.datasource.name»);
-            	«ENDIF»
-            	«state.counter = 0»
-	            	«FOR filter : l.filter»
-		            	«IF state.counter != 0»
-		            		«IF filter.expression !== null»
-		            			«IF filter.style !== null»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ENDIF»
-	            			«ELSEIF filter.mapType !== null»
-		            			«IF filter.style !== null»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ENDIF»
-		            		«ELSE»
-		            			«IF filter.style !== null»		L.geoJson(«l.datasource.name», {style: style«l.filter.get(state.counter).style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»		L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»});
-		            			«ENDIF»
-		            		«ENDIF»
-		            	«ENDIF»
-		            	«state.setCounter(state.counter + 1)»
-	            	«ENDFOR»
-						layer«l.name».addTo(«state.mapName»);
-			«ENDFOR»
+        Â«dataSoruce.nameÂ» = JSON.parse(data);
+            Â«FOR l : layersÂ»
+				Â«IF l.filter.size() !== 0Â»
+	        		Â«IF l.filter.get(0).expression !== nullÂ»
+	        			Â«IF l.filter.get(0).style !== nullÂ»		layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»Filter1, style: styleÂ«l.filter.get(0).style.nameÂ» Â«l.filter.get(0).generateCustumPointIconÂ»});
+	        				Â«ELSEÂ»		layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»Filter1 Â«l.filter.get(0).generateCustumPointIconÂ»		});
+	        			Â«ENDIFÂ»
+        			Â«ELSEIF l.filter.get(0).mapType !== nullÂ»
+	        			Â«IF l.filter.get(0).style !== nullÂ»		layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»Filter1, style: styleÂ«l.filter.get(0).style.nameÂ» Â«l.filter.get(0).generateCustumPointIconÂ»});
+	        				Â«ELSEÂ»		layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»Filter1 Â«l.filter.get(0).generateCustumPointIconÂ»		});
+	        			Â«ENDIFÂ»
+	        		Â«ELSEÂ»
+	        			Â«IF l.filter.get(0).style !== nullÂ»		layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ», { style: styleÂ«l.filter.get(0).style.nameÂ» Â«l.filter.get(0).generateCustumPointIconÂ»});
+	        				Â«ELSEÂ»		layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ» Â«l.filter.get(0).generateCustumPointIconÂ»);
+	        			Â«ENDIFÂ»
+	        		Â«ENDIFÂ»
+            	Â«ELSEÂ»
+				layerÂ«l.nameÂ» = L.geoJson(Â«l.datasource.nameÂ»);
+            	Â«ENDIFÂ»
+            	Â«state.counter = 0Â»
+	            	Â«FOR filter : l.filterÂ»
+		            	Â«IF state.counter != 0Â»
+		            		Â«IF filter.expression !== nullÂ»
+		            			Â«IF filter.style !== nullÂ»		L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»FilterÂ«state.counter+1Â», style: styleÂ«l.filter.get(state.counter).style.nameÂ» Â«filter.generateCustumPointIconÂ»}).addTo(layerÂ«l.nameÂ»);
+		            			Â«ELSEÂ»		L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»FilterÂ«state.counter+1Â» Â«filter.generateCustumPointIconÂ»}).addTo(layerÂ«l.nameÂ»);
+		            			Â«ENDIFÂ»
+	            			Â«ELSEIF filter.mapType !== nullÂ»
+		            			Â«IF filter.style !== nullÂ»		L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»FilterÂ«state.counter+1Â», style: styleÂ«l.filter.get(state.counter).style.nameÂ» Â«filter.generateCustumPointIconÂ»}).addTo(layerÂ«l.nameÂ»);
+		            			Â«ELSEÂ»		L.geoJson(Â«l.datasource.nameÂ», { filter: layerÂ«l.nameÂ»FilterÂ«state.counter+1Â» Â«filter.generateCustumPointIconÂ»}).addTo(layerÂ«l.nameÂ»);
+		            			Â«ENDIFÂ»
+		            		Â«ELSEÂ»
+		            			Â«IF filter.style !== nullÂ»		L.geoJson(Â«l.datasource.nameÂ», {style: styleÂ«l.filter.get(state.counter).style.nameÂ» Â«filter.generateCustumPointIconÂ»}).addTo(layerÂ«l.nameÂ»);
+		            			Â«ELSEÂ»		L.geoJson(Â«l.datasource.nameÂ»).addTo(layerÂ«l.nameÂ», {Â«filter.generateCustumPointIconÂ»});
+		            			Â«ENDIFÂ»
+		            		Â«ENDIFÂ»
+		            	Â«ENDIFÂ»
+		            	Â«state.setCounter(state.counter + 1)Â»
+	            	Â«ENDFORÂ»
+						layerÂ«l.nameÂ».addTo(Â«state.mapNameÂ»);
+			Â«ENDFORÂ»
 	}));
 	'''
 
 	def generateCustumPointIcon(Filter filter)'''
-	«IF filter.style != null»
-		«var makerName = filter.style.findIconStyle»
-		«IF makerName !== null»
+	Â«IF filter.style != nullÂ»
+		Â«var makerName = filter.style.findIconStyleÂ»
+		Â«IF makerName !== nullÂ»
 		,
 				    pointToLayer: function(feature, latlng) {
-				        return L.marker(latlng, { icon: getIcon«makerName»() });
+				        return L.marker(latlng, { icon: getIconÂ«makerNameÂ»() });
 				    }
-		«ENDIF»
-	«ENDIF»
+		Â«ENDIFÂ»
+	Â«ENDIFÂ»
 	'''
 
 	def String findIconStyle(Styling styling)
@@ -650,82 +652,82 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	'''
 
 	def generateMaps(Map map) '''
-	var «map.mapName» = L.map('map', {
-		«generateMapContainterOptions(map.optinals.filter(typeof(MapContainterOptions)).toList())»
-	}).setView([«printDOUBLE(map.location.lat)», «printDOUBLE(map.location.long)»], «generateMapOptinalStartZoom(map)»);
+	var Â«map.mapNameÂ» = L.map('map', {
+		Â«generateMapContainterOptions(map.optinals.filter(typeof(MapContainterOptions)).toList())Â»
+	}).setView([Â«printDOUBLE(map.location.lat)Â», Â«printDOUBLE(map.location.long)Â»], Â«generateMapOptinalStartZoom(map)Â»);
 
-	L.tileLayer('«map.mapSource»', {
- 		«generateMapTilelayerOptions(map.optinals.filter(typeof(MapTilelayerOptions)).toList())»
-	}).addTo(«map.mapName»);
+	L.tileLayer('Â«map.mapSourceÂ»', {
+ 		Â«generateMapTilelayerOptions(map.optinals.filter(typeof(MapTilelayerOptions)).toList())Â»
+	}).addTo(Â«map.mapNameÂ»);
 	'''
 
 	def generateMapTilelayerOptions(List<MapTilelayerOptions> mapTilelayerOptions)'''
-		«FOR m : mapTilelayerOptions SEPARATOR ','» «generateMapTilelayerOptionsMember(m)»
-		«ENDFOR»
+		Â«FOR m : mapTilelayerOptions SEPARATOR ','Â» Â«generateMapTilelayerOptionsMember(m)Â»
+		Â«ENDFORÂ»
 	'''
 
-	def printDOUBLE(DOUBLE value)'''«IF(value.value.neq)»-«value.value.value».«value.decimals»«ELSE»«value.value.value».«value.decimals»«ENDIF»'''
+	def printDOUBLE(DOUBLE value)'''Â«IF(value.value.neq)Â»-Â«value.value.valueÂ».Â«value.decimalsÂ»Â«ELSEÂ»Â«value.value.valueÂ».Â«value.decimalsÂ»Â«ENDIFÂ»'''
 
-	def printINTEGER(INTEGER value)'''«IF(value.neq)»-«value.value»«ELSE»«value.value»«ENDIF»'''
+	def printINTEGER(INTEGER value)'''Â«IF(value.neq)Â»-Â«value.valueÂ»Â«ELSEÂ»Â«value.valueÂ»Â«ENDIFÂ»'''
 
 	def dispatch printBOOLEAN(TRUE value)''' true '''
 
 	def dispatch printBOOLEAN(FALSE value)''' false '''
 
 	def dispatch generateMapTilelayerOptionsMember(MinZoom s)'''
-	minZoom : «s.zoom»
+	minZoom : Â«s.zoomÂ»
 	'''
 
 	def dispatch generateMapTilelayerOptionsMember(MaxZoom s)'''
-	maxZoom : «s.zoom»
+	maxZoom : Â«s.zoomÂ»
 	'''
 
 	def dispatch generateMapTilelayerOptionsMember(MaxNativeZoom s)'''
-	maxNativeZoom : «s.zoom»
+	maxNativeZoom : Â«s.zoomÂ»
 	'''
 
 	def dispatch generateMapTilelayerOptionsMember(ApiKey s)'''
-	apikey : '«s.apikey»'
+	apikey : 'Â«s.apikeyÂ»'
 	'''
 
 	def dispatch generateMapTilelayerOptionsMember(Attribution s)'''
-	attribution : «s.attribution»
+	attribution : Â«s.attributionÂ»
 	'''
 
-	def dispatch generateMapTilelayerOptionsMember(KeyValue s)''' «s.key» : «s.value» '''
+	def dispatch generateMapTilelayerOptionsMember(KeyValue s)''' Â«s.keyÂ» : Â«s.valueÂ» '''
 
 	def generateMapContainterOptions(List<MapContainterOptions> mapContainterOptions)'''
-		«FOR m : mapContainterOptions SEPARATOR ','»
-			«generateMapContainterOptionsMember(m)»
-		«ENDFOR»
+		Â«FOR m : mapContainterOptions SEPARATOR ','Â»
+			Â«generateMapContainterOptionsMember(m)Â»
+		Â«ENDFORÂ»
 	'''
 
 	def dispatch generateMapContainterOptionsMember(ScrollWheelZoom s)'''
-	scrollWheelZoom : «printBOOLEAN(s.inactive)»
+	scrollWheelZoom : Â«printBOOLEAN(s.inactive)Â»
 	'''
 
 	def dispatch generateMapContainterOptionsMember(DoubleClickZoom s)'''
-	doubleClickZoom : «printBOOLEAN(s.inactive)»
+	doubleClickZoom : Â«printBOOLEAN(s.inactive)Â»
 	'''
 
 	def dispatch generateMapContainterOptionsMember(DisableZoomBtn s)'''
-	zoomControl : «printBOOLEAN(s.inactive)»
+	zoomControl : Â«printBOOLEAN(s.inactive)Â»
 	'''
 
 	def dispatch generateMapContainterOptionsMember(KeyboardDisable s)'''
-	keyboard : «printBOOLEAN(s.inactive)»
+	keyboard : Â«printBOOLEAN(s.inactive)Â»
 	'''
 
 	def dispatch generateMapContainterOptionsMember(TouchZoomDisable s)'''
-	touchZoom : «printBOOLEAN(s.inactive)»
+	touchZoom : Â«printBOOLEAN(s.inactive)Â»
 	'''
 
 	def dispatch generateMapContainterOptionsMember(DraggingDisable s)'''
-	draggable :  «printBOOLEAN(s.inactive)»
+	draggable :  Â«printBOOLEAN(s.inactive)Â»
 	'''
 
 	def generateMapOptinalStartZoom(Map map)
-	'''«var startZoom = map.optinals.filter(typeof(StartZoom))»«IF(!startZoom.nullOrEmpty)»«startZoom.get(0).zoom»«ENDIF»'''
+	'''Â«var startZoom = map.optinals.filter(typeof(StartZoom))Â»Â«IF(!startZoom.nullOrEmpty)Â»Â«startZoom.get(0).zoomÂ»Â«ENDIFÂ»'''
 
 	def generateStaticHeader()'''
 	<!DOCTYPE html>
@@ -749,14 +751,14 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	'''
 
 	def generateInclude(List<Include> includes)
-	'''«FOR i : includes»	«generateIncludeMember(i)»«ENDFOR»
+	'''Â«FOR i : includesÂ»	Â«generateIncludeMember(i)Â»Â«ENDFORÂ»
 	'''
 
 	def dispatch generateIncludeMember(Script s)
 	'''
-	<script src="«s.source»"></script>
+	<script src="Â«s.sourceÂ»"></script>
 	'''
 	def dispatch generateIncludeMember(Style s) '''
-	<link rel="stylesheet" href="«s.source»" />
+	<link rel="stylesheet" href="Â«s.sourceÂ»" />
 	'''
 }

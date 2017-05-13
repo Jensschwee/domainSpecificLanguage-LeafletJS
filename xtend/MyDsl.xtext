@@ -135,7 +135,7 @@ DataSource:
 ;
 
 DataSourceVariable:
-	'variable' vname=ID 'to' mapsto=STRING 'type' type=DataSourceVariableType
+	'variable' vname=ID 'name' mapsto=STRING 'type' type=DataSourceVariableType
 ;
 
 DataSourceVariableType:

@@ -6,28 +6,28 @@ include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min
 map worldmap startZoom 4 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 55.609991 long 12.690006  "http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
 
 source geojson TheWorld "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json" {
-	variable name to "name" type string
+	variable contry name "name" type string
 }
 
 layer Afghanistan from TheWorld {
-	filter styling defaultStyle where name = "Afghanistan"
+	filter styling defaultStyle where contry = "Afghanistan"
 }
 
 layer EU from TheWorld {
-	filter styling blue where name = "Denmark" or name = "Ireland" or name = "Sweden" or name = "Germany" or name = "Poland" or name = "Luxembourg"
-	filter styling blue where name = "Finland" or name = "France" or name = "Spain" or name = "Greece" or name = "Netherlands" or name ="Malta"
-	filter styling blue where name = "Italy" or name = "Austria" or name = "Belgium" or name = "Bulgaria" or name = "Croatia" or name = "Cyprus"
-	filter styling blue where name = "Czech Republic" or name ="Estonia" or name ="Hungary" or name ="Latvia" or name ="Lithuania" or name = "Portugal"
-	filter styling blue where name = "Romania" or name ="Slovakia" or name = "Slovenia"
-	filter styling blueOpacityMax where name = "United Kingdom"
+	filter styling blue where contry = "Denmark" or contry = "Ireland" or contry = "Sweden" or contry = "Germany" or contry = "Poland" or contry = "Luxembourg"
+	filter styling blue where contry = "Finland" or contry = "France" or contry = "Spain" or contry = "Greece" or contry = "Netherlands" or contry ="Malta"
+	filter styling blue where contry = "Italy" or contry = "Austria" or contry = "Belgium" or contry = "Bulgaria" or contry = "Croatia" or contry = "Cyprus"
+	filter styling blue where contry = "Czech Republic" or contry ="Estonia" or contry ="Hungary" or contry ="Latvia" or contry ="Lithuania" or contry = "Portugal"
+	filter styling blue where contry = "Romania" or contry ="Slovakia" or contry = "Slovenia"
+	filter styling blueOpacityMax where contry = "United Kingdom"
 }
 
 layer Denmark from TheWorld {
-	filter styling red type multipolygon where name = "Denmark"
+	filter styling red type multipolygon where contry = "Denmark"
 }
 
 layer Greenland from TheWorld {
-	filter styling green where name = "Greenland"
+	filter styling green where contry = "Greenland"
 }
 
 style defaultStyle {

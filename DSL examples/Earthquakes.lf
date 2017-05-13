@@ -21,16 +21,16 @@ source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/su
 transform dataYear time where value / (31556926 * 1000) + 1970
 
 layer BigEQ from Earthquakes {
-	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
-	filter EQStyle where mag > 5.0 and magType = "mwr" and (sig > 100 or cdi != 2.0)
+	filter styling BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
+	filter styling EQStyle where mag > 5.0 and magType = "mwr" and (sig > 100 or cdi != 2.0)
 }
 
 layer Tsunamis from Earthquakes {
-	filter TsunamiStyle where tsunami = true
+	filter styling TsunamiStyle where tsunami = true
 }
 
 layer ThisYear from Earthquakes {
-	filter EQStyle where dataYear > 2016 and dataYear < 2018
+	filter styling EQStyle where dataYear > 2016 and dataYear < 2018
 }
 
 layer fisk from Earthquakes {

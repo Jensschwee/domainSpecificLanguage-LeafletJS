@@ -219,7 +219,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	«IF layer.filter.size() !== 0»
 		«state.setCounter(1)»
 		«FOR filter : layer.filter»
-			«var expression = (filter.filterElements.findFirst[it instanceof Disjunction] as LogicExpression)»
+			«var expression = (filter.filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)»
 			«var mapType = (filter.filterElements.findFirst[it instanceof MapType] as MapType)»
 			«IF expression !== null »
 				«var variabels =  expression.findVariabelsForFilter»
@@ -456,7 +456,7 @@ class DomainmodelGenerator extends AbstractGenerator {
         «dataSoruce.name» = JSON.parse(data);
             «FOR l : layers»
 				«IF l.filter.size() !== 0»
-					«var expression = ( l.filter.get(0).filterElements.findFirst[it instanceof Disjunction] as LogicExpression)»
+					«var expression = ( l.filter.get(0).filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)»
 					«var mapType = (l.filter.get(0).filterElements.findFirst[it instanceof FilterMapType] as FilterMapType)»
 					«var style = (l.filter.get(0).filterElements.findFirst[it instanceof FilterStyle] as FilterStyle)»
 	        		«IF expression !== null»
@@ -478,7 +478,7 @@ class DomainmodelGenerator extends AbstractGenerator {
             	«state.counter = 0»
 	            	«FOR filter : l.filter»
 		            	«IF state.counter != 0»
-		            		«var expression = ( filter.filterElements.findFirst[it instanceof Disjunction] as LogicExpression)»
+		            		«var expression = ( filter.filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)»
 		            		«var mapType = (filter.filterElements.findFirst[it instanceof FilterMapType] as FilterMapType)»
 		            		«var style = (filter.filterElements.findFirst[it instanceof FilterStyle] as FilterStyle)»
 		            		«IF expression !== null»

@@ -14,19 +14,19 @@ source geojson stations "https://www.mapbox.com/help/data/stations.geojson" {
 }
 
 layer orangeLine from stations2 {
-	filter OrangeStyle where line = "orange"
+	filter styling OrangeStyle where line = "orange"
 }
 
 layer blueLine from stations{
-	filter BlueStyle where line = "blue"
+	filter styling BlueStyle where line = "blue"
 }
 
 layer yellowLine from stations {
-	filter YellowStyle where line = "yellow"
+	filter styling YellowStyle where line = "yellow"
 }
 
 layer greenLine from stations {
-	filter GreenStyle where line = "green"
+	filter styling GreenStyle where line = "green"
 }
 
 icon iconBlue size 10 source "http://www.freeiconspng.com/uploads/button-blank-blue-icon-6.png"

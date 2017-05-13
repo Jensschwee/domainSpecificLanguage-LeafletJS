@@ -160,11 +160,12 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	
 	@Check
 	def checkFilterDatasoruces(Filter filter) {
-		var expression = ( filter.filterElements.findFirst[it instanceof Disjunction] as LogicExpression)
 		
-		if(expression !== null )
+		var expression = ( filter.filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)
+		
+		if(expression !== null)
 		{
-			
+			var expressionIndex = filter.filterElements.indexOf(expression);
 			var layer =	filter.eContainer() as Layer;
 			var variables =  expression.findVariabelsForFilter;
 			var datasoruceVar = new HashSet<String>;
@@ -176,9 +177,9 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			for (variable : variables)
 			{
 				if(!datasoruceVar.contains(variable))
-					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);		 	 
+					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
 			}
-			expression.checkDatatypeExp(layer.datasource.variables);
+			expression.checkDatatypeExp(layer.datasource.variables, expressionIndex);
 		 }
 	}
 	
@@ -219,72 +220,72 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		state.datasources.add(datasource);		
 	}
 	
-	def void checkDatatypeExp(LogicExpression exp,EList<DataSourceVariable> variables) {
-		exp.checkDatatypeFilterExp(variables);
+	def void checkDatatypeExp(LogicExpression exp,EList<DataSourceVariable> variables, int expressionIndex) {
+		exp.checkDatatypeFilterExp(variables, expressionIndex);
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables) {
-		exp.left.checkDatatypeFilterExp(variables);
+	def dispatch DataTypes checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables, int expressionIndex) {
+		exp.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(exp.right !== null)
 		{
-			exp.right.checkDatatypeFilterExp(variables);
+			exp.right.checkDatatypeFilterExp(variables, expressionIndex);
 			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables){
-		var type1 = com.left.checkDatatypeFilterExp(variables);
+	def dispatch DataTypes checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables, int expressionIndex){
+		var type1 = com.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(com.right !== null && com.operator !== null)
 		{
-			var type2 = com.right.checkDatatypeFilterExp(variables);
-			com.operator.checkDatatypes(type1, type2);
+			var type2 = com.right.checkDatatypeFilterExp(variables, expressionIndex);
+			com.operator.checkDatatypes(type1, type2, expressionIndex);
 			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables){
-		di.left.checkDatatypeFilterExp(variables);
+	def dispatch DataTypes checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables, int expressionIndex){
+		di.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(di.right !== null)
 		{
-			di.right.checkDatatypeFilterExp(variables);
+			di.right.checkDatatypeFilterExp(variables, expressionIndex);
 			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables){
-		con.left.checkDatatypeFilterExp(variables);
+	def dispatch DataTypes checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables, int expressionIndex){
+		con.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(con.right !== null)
 		{
-			con.right.checkDatatypeFilterExp(variables);
+			con.right.checkDatatypeFilterExp(variables, expressionIndex);
 			//type1.checkDatatypes(type2);
 		}
 		return null;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(MathTerm datatype,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(MathTerm datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		return DataTypes.NUMBER;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(BOOLEAN datatype,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(BOOLEAN datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		return DataTypes.BOOLIAN;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(AllTypes datatype,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(AllTypes datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		if(!datatype.id.isNullOrEmpty)
 		{
 			var transform = state.transforms.findFirst[it.name==datatype.id]
 			if(transform !== null)
 			{
-				return transform.checkDatatypeFilterExp(variables);
+				return transform.checkDatatypeFilterExp(variables, expressionIndex);
 			}
 			else
 			{
 				var type = variables.findFirst[it.vname == datatype.id].type;
 				if(type !== null)
-					return type.checkDatatypeFilterExp(variables);
+					return type.checkDatatypeFilterExp(variables, expressionIndex);
 			}
 		}
 		else
@@ -293,50 +294,50 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		}
 	}
 		
-	def dispatch DataTypes checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables) {
-		var datatype = variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables);
+	def dispatch DataTypes checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables, int expressionIndex) {
+		var datatype = variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables, expressionIndex);
 		if(!datatype.equals(DataTypes.NUMBER))
 		{
 			var datasoruce =	variables.findFirst[it.vname == transform.variable].eContainer as DataSource;
-			error("Transform " + transform.name + " can not use this input. \n Only supports numbers. \n variable " + transform.variable + " is not a number in the data source " + datasoruce.name, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);
+			error("Transform " + transform.name + " can not use this input. \n Only supports numbers. \n variable " + transform.variable + " is not a number in the data source " + datasoruce.name, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);
 		}
 		return datatype;
 	}
 	
 	
-	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.String datatype,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.String datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		return DataTypes.STRING;
 	}
 	
 	
-	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Number datatype,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Number datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		return DataTypes.NUMBER;
 	}
 	
-	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Bool datatype,EList<DataSourceVariable> variables) {
+	def dispatch DataTypes checkDatatypeFilterExp(org.example.domainmodel.domainmodel.Bool datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		return DataTypes.BOOLIAN;
 	}
 	
-	def Boolean isDatatypesEquals(DataTypes type1, DataTypes type2)
+	def Boolean isDatatypesEquals(DataTypes type1, DataTypes type2, int expressionIndex)
 	{
 		if(!type1.equals(type2))
 		{
-			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);		 	 
+			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
 			return false;
 		}
 		return true;
 	}
 	
-	def dispatch checkDatatypes(LESS less, DataTypes type1, DataTypes type2)
+	def dispatch checkDatatypes(LESS less, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
-		if(type1.isDatatypesEquals(type2))
+		if(type1.isDatatypesEquals(type2, expressionIndex))
 		{
 			switch (type1) {
 				case DataTypes.BOOLIAN: {
-					boolErrorMsg("LESS")
+					boolErrorMsg("LESS", expressionIndex)
 				}
 				case DataTypes.STRING: {
-					stringErrorMsg("LESS");
+					stringErrorMsg("LESS", expressionIndex);
 				}
 				case NUMBER: {
 					//THIS IS FINE
@@ -344,16 +345,16 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			}
 		}
 	}
-	def dispatch checkDatatypes(MORE less, DataTypes type1, DataTypes type2)
+	def dispatch checkDatatypes(MORE less, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
-		if(type1.isDatatypesEquals(type2))
+		if(type1.isDatatypesEquals(type2,expressionIndex))
 		{
 			switch (type1) {
 				case DataTypes.BOOLIAN: {
-					boolErrorMsg("MORE")
+					boolErrorMsg("MORE", expressionIndex)
 				}
 				case DataTypes.STRING: {
-					stringErrorMsg("MORE");
+					stringErrorMsg("MORE", expressionIndex);
 				}
 				case NUMBER: {
 					//THIS IS FINE
@@ -361,20 +362,20 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			}
 		}
 	}
-	def dispatch checkDatatypes(EQ eq, DataTypes type1, DataTypes type2)
+	def dispatch checkDatatypes(EQ eq, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
-		type1.isDatatypesEquals(type2);		
+		type1.isDatatypesEquals(type2,expressionIndex);		
 	}
-	def dispatch checkDatatypes(EQLESS eqless, DataTypes type1, DataTypes type2)
+	def dispatch checkDatatypes(EQLESS eqless, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
-		if(type1.isDatatypesEquals(type2))
+		if(type1.isDatatypesEquals(type2,expressionIndex))
 		{
 			switch (type1) {
 				case DataTypes.BOOLIAN: {
-					boolErrorMsg("EQUAL or LESS")
+					boolErrorMsg("EQUAL or LESS", expressionIndex)
 				}
 				case DataTypes.STRING: {
-					stringErrorMsg("EQUAL or LESS");
+					stringErrorMsg("EQUAL or LESS", expressionIndex);
 				}
 				case NUMBER: {
 					//THIS IS FINE
@@ -382,16 +383,16 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			}
 		}
 	}
-	def dispatch checkDatatypes(EQMORE eqmore, DataTypes type1, DataTypes type2)
+	def dispatch checkDatatypes(EQMORE eqmore, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
-		if(type1.isDatatypesEquals(type2))
+		if(type1.isDatatypesEquals(type2,expressionIndex))
 		{
 			switch (type1) {
 				case DataTypes.BOOLIAN: {
-					boolErrorMsg("EQUAL or MORE")
+					boolErrorMsg("EQUAL or MORE", expressionIndex)
 				}
 				case DataTypes.STRING: {
-					stringErrorMsg("EQUAL or MORE");
+					stringErrorMsg("EQUAL or MORE", expressionIndex);
 				}
 				case NUMBER: {
 					//THIS IS FINE
@@ -399,20 +400,20 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			}
 		}
 	}
-	def dispatch checkDatatypes(NOT not, DataTypes type1, DataTypes type2)
+	def dispatch checkDatatypes(NOT not, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
 		if(!type1.equals(type2))
-			info("These date types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);		 	 
+			info("These date types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
 	}
 	
-	def stringErrorMsg(String type)
+	def stringErrorMsg(String type, int expressionIndex)
 	{
-		error("Strings can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);
+		error("Strings can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);
 	}
 	
-	def boolErrorMsg(String type)
+	def boolErrorMsg(String type, int expressionIndex)
 	{
-		error("Booleans can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS);
+		error("Booleans can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);
 	}
 	
 	@Check

@@ -100,6 +100,7 @@ import org.example.domainmodel.domainmodel.DataSourceVariable
 import org.example.domainmodel.domainmodel.impl.LineColorImpl
 import org.example.domainmodel.domainmodel.FilterStyle
 import org.example.domainmodel.domainmodel.FilterMapType
+import org.example.domainmodel.domainmodel.FilterTypes
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -183,6 +184,7 @@ class DomainmodelGenerator extends AbstractGenerator {
     «ENDFOR»
 		return style;
 	}
+	
 	'''
 	
 	def dispatch generateCSSElement(LineColor style) 
@@ -219,30 +221,33 @@ class DomainmodelGenerator extends AbstractGenerator {
 	«IF layer.filter.size() !== 0»
 		«state.setCounter(1)»
 		«FOR filter : layer.filter»
-			«var expression = (filter.filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)»
-			«var mapType = (filter.filterElements.findFirst[it instanceof MapType] as MapType)»
-			«IF expression !== null »
+			«var expressionList = filter.filterElements.filter(LogicExpression)»
+			«var mapTypeList = filter.filterElements.filter(FilterMapType)»
+			«IF expressionList.size > 0»
+				«var expression = expressionList.get(0)»
 				«var variabels =  expression.findVariabelsForFilter»
 				function layer«layer.name»Filter«state.counter»(feature) {
 				        if (feature == undefined || feature.properties === undefined «IF variabels.size()  !== 0»||«ENDIF» «FOR str : variabels SEPARATOR "|| "»!feature.properties["«str»"] === undefined «ENDFOR»)
 				            return false;
-				            «IF(mapType !== null)»
-				            if (feature.geometry.type !== "«mapType.maptypeGenerate»")
-				                        return false;
+				            «IF(mapTypeList.size > 0)»
+				            «var mapType = mapTypeList.get(0)»
+			            if (feature.geometry.type !== "«mapType.mapType.maptypeGenerate»")
+			            	return false;
 				            «ENDIF»
-				         «expression.generateFilterExpression»   
-				        return false;
-				}
+				         «expression.generateFilterExpression»
 				«state.setCounter(state.counter + 1)»
-			«ELSEIF mapType !== null»
-				 function layer«layer.name»Filter«state.counter»(feature) {
+			«ELSEIF mapTypeList.size > 0»
+				«var mapType = mapTypeList.get(0)»
+				function layer«layer.name»Filter«state.counter»(feature) {
 				 				            «IF(mapType !== null)»
-				 				            if (feature.geometry.type === "«mapType.maptypeGenerate»")
-				 				                        return true;
-				 				            «ENDIF»
-				 				        return false;
-				 }
+			            if (feature.geometry.type === "«mapType.mapType.maptypeGenerate»")
+			            	return true;
+		            «ENDIF»
+				
 			«ENDIF»
+			        return false;
+			}
+			
 		«ENDFOR»
 	«ENDIF»
 	'''
@@ -413,6 +418,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 			}]
 		}).addTo(«state.mapName»);
 		toogle«buttons.layer.name».button.style.backgroundColor = 'grey';
+		
 	'''
 	
 	def dispatch generateLocation(TOPRIGHT location) '''topright'''
@@ -456,44 +462,14 @@ class DomainmodelGenerator extends AbstractGenerator {
         «dataSoruce.name» = JSON.parse(data);
             «FOR l : layers»
 				«IF l.filter.size() !== 0»
-					«var expression = ( l.filter.get(0).filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)»
-					«var mapType = (l.filter.get(0).filterElements.findFirst[it instanceof FilterMapType] as FilterMapType)»
-					«var style = (l.filter.get(0).filterElements.findFirst[it instanceof FilterStyle] as FilterStyle)»
-	        		«IF expression !== null»
-	        			«IF style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«style.style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
-	        			«ENDIF»
-        			«ELSEIF mapType !== null»	
-	        			«IF style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1, style: style«style.style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter1 «l.filter.get(0).generateCustumPointIcon»		});
-	        			«ENDIF»
-	        		«ELSE»
-	        			«IF style !== null»		layer«l.name» = L.geoJson(«l.datasource.name», { style: style«style.style.name» «l.filter.get(0).generateCustumPointIcon»});
-	        				«ELSE»		layer«l.name» = L.geoJson(«l.datasource.name» «l.filter.get(0).generateCustumPointIcon»);
-	        			«ENDIF»
-	        		«ENDIF»
+					layer«l.name» = L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter[it instanceof LogicExpression || it instanceof FilterStyle] SEPARATOR ","»«FE.generateFilterElements(l,1)»«ENDFOR» «l.filter.get(0).generateCustumPointIcon»});
             	«ELSE»
 				layer«l.name» = L.geoJson(«l.datasource.name»);
             	«ENDIF»
             	«state.counter = 0»
 	            	«FOR filter : l.filter»
 		            	«IF state.counter != 0»
-		            		«var expression = ( filter.filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)»
-		            		«var mapType = (filter.filterElements.findFirst[it instanceof FilterMapType] as FilterMapType)»
-		            		«var style = (filter.filterElements.findFirst[it instanceof FilterStyle] as FilterStyle)»
-		            		«IF expression !== null»
-		            			«IF style !== null»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«style.style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ENDIF»
-	            			«ELSEIF mapType !== null»
-		            			«IF style !== null»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1», style: style«style.style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»		L.geoJson(«l.datasource.name», { filter: layer«l.name»Filter«state.counter+1» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ENDIF»
-		            		«ELSE»
-		            			«IF style !== null»		L.geoJson(«l.datasource.name», {style: style«style.style.name» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);
-		            			«ELSE»		L.geoJson(«l.datasource.name»).addTo(layer«l.name», {«filter.generateCustumPointIcon»});
-		            			«ENDIF»
-		            		«ENDIF»
+		            	L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter[it instanceof LogicExpression || it instanceof FilterStyle] SEPARATOR "," »«FE.generateFilterElements(l,state.counter+1)»«ENDFOR» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);;
 		            	«ENDIF»
 		            	«state.setCounter(state.counter + 1)»
 	            	«ENDFOR»
@@ -502,9 +478,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 	}));
 	'''
 	
+	def dispatch CharSequence generateFilterElements(FilterStyle style,Layer layer,  int index)'''style: style«style.style.name»'''
+	def dispatch CharSequence generateFilterElements(FilterMapType mapType, Layer layer,int index)'''''' //DO NOTHING
+	def dispatch CharSequence generateFilterElements(LogicExpression types,Layer layer, int index)'''filter: layer«layer.name»Filter«index»'''
+	
 	def generateCustumPointIcon(Filter filter)'''
-	«var style = (filter.filterElements.findFirst[it instanceof FilterStyle] as FilterStyle)»
-	«IF style != null»
+	«var styleList = filter.filterElements.filter(FilterStyle)»
+	«IF styleList.size > 0»
+		«var style = styleList.get(0)»
 		«var makerName = style.style.findIconStyle»
 		«IF makerName !== null»
 		,

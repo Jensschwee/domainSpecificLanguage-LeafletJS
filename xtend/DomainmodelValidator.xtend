@@ -39,6 +39,8 @@ import org.example.domainmodel.domainmodel.EQLESS
 import org.example.domainmodel.domainmodel.EQ
 import org.example.domainmodel.domainmodel.MORE
 import org.example.domainmodel.domainmodel.LeafletVersion
+import org.example.domainmodel.domainmodel.FilterMapType
+import org.example.domainmodel.domainmodel.FilterStyle
 
 public enum DataTypes {
     BOOLIAN, STRING, NUMBER
@@ -161,10 +163,25 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	@Check
 	def checkFilterDatasoruces(Filter filter) {
 		
-		var expression = ( filter.filterElements.findFirst[it instanceof LogicExpression] as LogicExpression)
+		var expressionList = filter.filterElements.filter(LogicExpression);
+		var mapTypeList = filter.filterElements.filter(FilterMapType);
+		var styleList = filter.filterElements.filter(FilterStyle);
 		
-		if(expression !== null)
+		if(mapTypeList.size > 1)
 		{
+			var index = filter.filterElements.indexOf(mapTypeList.get(mapTypeList.size-1));
+			error("Filter can only have one type element", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,index);		 	 
+		}
+		
+		if(styleList.size > 1)
+		{
+			var index = filter.filterElements.indexOf(styleList.get(styleList.size-1));
+			error("Filter can only have one styling element", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,index);		 	 
+		}
+		
+		if(expressionList.size == 1)
+		{
+			var expression = expressionList.get(0);
 			var expressionIndex = filter.filterElements.indexOf(expression);
 			var layer =	filter.eContainer() as Layer;
 			var variables =  expression.findVariabelsForFilter;
@@ -180,6 +197,11 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 					error("All variables must be defined under the datasource: \n Datasource '" +  layer.datasource.name + "' does not have variable '" + variable + "'", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
 			}
 			expression.checkDatatypeExp(layer.datasource.variables, expressionIndex);
+		 }
+		 else if(expressionList.size > 1)
+		 {
+		 	var index = filter.filterElements.indexOf(expressionList.get(expressionList.size-1));
+			error("Filter can only have one where element", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,index);
 		 }
 	}
 	

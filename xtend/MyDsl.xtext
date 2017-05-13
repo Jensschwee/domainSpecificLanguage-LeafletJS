@@ -141,7 +141,19 @@ LogicComparison:
 
 // TODO: is ID a declared set variable?
 SetComparison:
-	left=ID operator=SetComparisonOperator right=SetTypes
+	left=ID operator=SetComparisonOperator right=SetExpression
+;
+
+SetExpression returns SetExp:
+	SetTerm ({SetExpression.left=current} op=SetOperator right=SetTerm)*
+;
+
+SetTerm returns SetExp:
+	SetTypes | '(' SetExpression ')'
+;
+
+SetOperator:
+	{UNION} 'union' | {INTERSECT} 'intersect' | {DIFF} 'subtract'
 ;
 
 // TODO: is ID a declared set variable?

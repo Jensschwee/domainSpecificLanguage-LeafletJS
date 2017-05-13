@@ -54,10 +54,7 @@ public enum DataTypes {
 
 class StateClass {  
     @Property
-    var Set<Transform> transforms = new HashSet();
-     @Property
-    var Set<DataSource> datasources = new HashSet();
-    
+    var Set<Transform> transforms = new HashSet();    
 }
 
 /**
@@ -102,19 +99,22 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	}
 	
 	def dispatch void findFilterVariables(Disjunction di, Set<String> variabels){
-		di.left.findFilterVariables(variabels);
+		if(di.left !== null)
+			di.left.findFilterVariables(variabels);
 		if(di.right !== null)
 			di.right.findFilterVariables(variabels);
 	}
 	
 	def dispatch void findFilterVariables(Conjunction con, Set<String> variabels){
-		con.left.findFilterVariables(variabels);
+		if(con.left !== null)
+			con.left.findFilterVariables(variabels);
 		if(con.right !== null)
 			con.right.findFilterVariables(variabels);
 	}
 	
 	def dispatch void findFilterVariables(LogicExp le, Set<String> variabels){
-		le.left.findFilterVariables(variabels);
+		if(le.left !== null)
+			le.left.findFilterVariables(variabels);
 		if(le.right !== null)
 			le.right.findFilterVariables(variabels);
 	}
@@ -291,37 +291,34 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		}
 	}
 	
-	@Check
-	def addDataSourceToList(DataSource datasource) {
-		state.datasources.add(datasource);		
-	}
-	
 	def void checkDatatypeExp(LogicExpression exp,EList<DataSourceVariable> variables, int expressionIndex) {
 		exp.checkDatatypeFilterExp(variables, expressionIndex);
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(LogicExp exp,EList<DataSourceVariable> variables, int expressionIndex) {
-		exp.left.checkDatatypeFilterExp(variables, expressionIndex);
+		if(exp.left !== null)
+			exp.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(exp.right !== null)
-		{
 			exp.right.checkDatatypeFilterExp(variables, expressionIndex);
-			//type1.checkDatatypes(type2);
-		}
 		return null;
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(Comparison com, EList<DataSourceVariable> variables, int expressionIndex){
-		var type1 = com.left.checkDatatypeFilterExp(variables, expressionIndex);
-		if(com.right !== null && com.operator !== null)
+		if(com.left !== null)
 		{
-			var type2 = com.right.checkDatatypeFilterExp(variables, expressionIndex);
-			com.operator.checkDatatypes(type1, type2, expressionIndex);
+			var type1 = com.left.checkDatatypeFilterExp(variables, expressionIndex);
+			if(com.right !== null && com.operator !== null)
+			{
+				var type2 = com.right.checkDatatypeFilterExp(variables, expressionIndex);
+				com.operator.checkDatatypes(type1, type2, expressionIndex);
+			}
 		}
 		return null;
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(Disjunction di, EList<DataSourceVariable> variables, int expressionIndex){
-		di.left.checkDatatypeFilterExp(variables, expressionIndex);
+		if(di.left !== null)
+			di.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(di.right !== null)
 		{
 			di.right.checkDatatypeFilterExp(variables, expressionIndex);
@@ -330,7 +327,8 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	}
 	
 	def dispatch DataTypes checkDatatypeFilterExp(Conjunction con, EList<DataSourceVariable> variables, int expressionIndex){
-		con.left.checkDatatypeFilterExp(variables, expressionIndex);
+		if(con.left !== null)
+			con.left.checkDatatypeFilterExp(variables, expressionIndex);
 		if(con.right !== null)
 		{
 			con.right.checkDatatypeFilterExp(variables, expressionIndex);
@@ -487,11 +485,5 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	def boolErrorMsg(String type, int expressionIndex)
 	{
 		error("Booleans can not handle operator " + type, DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);
-	}
-	
-	@Check
-	def checkDataSourceVariable(DataSourceVariable variable)
-	{
-		var dataSource = variable.eContainer as DataSource;
 	}
 }

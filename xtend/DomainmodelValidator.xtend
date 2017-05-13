@@ -137,11 +137,13 @@ class LeafletDSLValidator extends AbstractLeafletDSLValidator {
 	}
 
 	def dispatch void findFilterVariables(SetComparison con, Set<String> variabels){
-		con.right.findFilterVariables(variabels);
+		if(con.left !== null) {
+			variabels.add(con.left);
+		}
 	}
 
-	def dispatch void findFilterVariables(SetTypes st, Set<String> variabels){
-		// TODO: Do something here
+	def dispatch void findFilterVariables(SetTypes st, Set<String> variabels) {
+		// TODO: Do something here, or ignore?
 	}
 
 	def dispatch void findFilterVariables(Comparison con, Set<String> variabels) {

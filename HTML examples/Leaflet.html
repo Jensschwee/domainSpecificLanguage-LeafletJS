@@ -44,9 +44,42 @@
         }
 
 	var FF = L.map('map', {
-		zoomControl :  true 
+		zoomControl :  true
 	}).setView([38.800425, -77.7], 12);
-	
+
+	function subtractSets(set1, set2) {
+			newSet = [];
+			for (var i = 0; i < set1.length; i++) {
+					index = $.inArray(set1[i], set2);
+					if(index == -1) {
+							newSet.push(set1[i]);
+					}
+			}
+			return newSet;
+	}
+
+	function intersectSets(set1, set2) {
+			newSet = [];
+			for (var i = 0; i < set1.length; i++) {
+					for (var j = 0; j < set2.length; i++) {
+							index = $.inArray(set1[i], set2);
+							index2 = $.inArray(set2[j], set1);
+							if(index != -1 && index2 != -1) {
+									newSet.push(set1[i]);
+							}
+					}
+			}
+			return newSet;
+	}
+
+	function unionSets(set1, set2) {
+			return $.merge(set1, set2);
+	}
+
+	function containedWithinSet(set, value) {
+			return $.inArray(value, set) != -1;
+	}
+
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	 		 minZoom : 1,
 	 		 maxZoom : 19,
@@ -94,7 +127,7 @@
 	         }
 	        return false;
 	}
-	
+
 	function layerblueLineFilter1(feature) {
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
 	            return false;
@@ -104,7 +137,7 @@
 	         }
 	        return false;
 	}
-	
+
 	function layeryellowLineFilter1(feature) {
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
 	            return false;
@@ -114,7 +147,7 @@
 	         }
 	        return false;
 	}
-	
+
 	function layergreenLineFilter1(feature) {
 	        if (feature == undefined || feature.properties === undefined || !feature.properties.line === undefined )
 	            return false;
@@ -124,14 +157,14 @@
 	         }
 	        return false;
 	}
-	
+
 	function getIconiconTemputur() {
 	    return L.icon({
 	        iconUrl: 'http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/sign-check-icon.png',
 	        iconSize: [5, 5]
 	    });
 	}
-	    
+
 	function getEasybuttonImageiconTemputur() {
 		var height = 5;
 		var width = 5;
@@ -144,7 +177,7 @@
 	        iconSize: [16, 16]
 	    });
 	}
-	    
+
 	function getEasybuttonImageiconTemputur1() {
 		var height = 16;
 		var width = 16;

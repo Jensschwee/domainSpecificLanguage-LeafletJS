@@ -27,6 +27,9 @@ import dk.sdu.mmmi.msd.leafletDSL.Value
 import dk.sdu.mmmi.msd.leafletDSL.Style
 import dk.sdu.mmmi.msd.leafletDSL.Styling
 import dk.sdu.mmmi.msd.leafletDSL.LeafletDSLPackage
+import dk.sdu.mmmi.msd.leafletDSL.LogicComparison
+import dk.sdu.mmmi.msd.leafletDSL.SetComparison
+import dk.sdu.mmmi.msd.leafletDSL.SetTypes
 
 /**
  * This class contains custom validation rules.
@@ -45,7 +48,7 @@ class StateClass {
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
  */
-class DomainmodelValidator extends AbstractLeafletDSLValidator {
+class LeafletDSLValidator extends AbstractLeafletDSLValidator {
 
 //	public static val INVALID_NAME = 'invalidName'
 //
@@ -128,9 +131,20 @@ class DomainmodelValidator extends AbstractLeafletDSLValidator {
 			mat.transform.findTransformVariables(variabels);
 	}
 
-	def dispatch void findFilterVariables(Comparison con, Set<String> variabels){
+	def dispatch void findFilterVariables(LogicComparison con, Set<String> variabels){
 		con.left.findFilterVariables(variabels);
 		con.right.findFilterVariables(variabels);
+	}
+
+	def dispatch void findFilterVariables(SetComparison con, Set<String> variabels){
+		con.right.findFilterVariables(variabels);
+	}
+
+	def dispatch void findFilterVariables(SetTypes st, Set<String> variabels){
+		// TODO: Do something here
+	}
+
+	def dispatch void findFilterVariables(Comparison con, Set<String> variabels) {
 	}
 
 	@Check

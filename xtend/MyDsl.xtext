@@ -142,12 +142,12 @@ LogicComparison:
 
 // TODO: is ID a declared set variable?
 SetComparison:
-	(left=SetTypes operator=SetComparisonOperator right=ID)
+	left=ID operator=SetComparisonOperator right=SetTypes
 ;
 
 // TODO: is ID a declared set variable?
 SetTypes:
-	set=Set | left=ID
+	set=Set | id=ID
 ;
 
 SetComparisonOperator:
@@ -155,10 +155,9 @@ SetComparisonOperator:
 ;
 
 Set:
-	{Set} '[' (items+=AllTypes)? (',' items+=AllTypes)* ']'
+	{Set} '[' (items+=AllSetTypes)? (',' items+=AllSetTypes)* ']'
 ;
 
-// TODO: Fix all, Oparator -> Operator, in generator / validator
 LogicComparisonOperator:
 	{LESS} '<' | {MORE} '>' | {EQ} '=' | {EQLESS} '=<' | {EQMORE} '=>' | {EQLESS} '<=' | {EQMORE} '>=' | {NOT} '!=' | {NOT} '<>' | {NOT} '=!'
 ;
@@ -259,6 +258,10 @@ ApiKey:
 
 Attribution:
 	'attribution' attribution=STRING
+;
+
+AllSetTypes:
+	NumberTypes | s=STRING | BOOLEAN
 ;
 
 AllTypes:

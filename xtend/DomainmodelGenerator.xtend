@@ -96,6 +96,13 @@ import dk.sdu.mmmi.msd.leafletDSL.MULTILINESTRING
 import dk.sdu.mmmi.msd.leafletDSL.MULTIPOINT
 import dk.sdu.mmmi.msd.leafletDSL.GEOMETRYCOLLECTION
 import dk.sdu.mmmi.msd.leafletDSL.MULTIPOLYGON
+import dk.sdu.mmmi.msd.leafletDSL.LogicComparison
+import dk.sdu.mmmi.msd.leafletDSL.SetComparison
+import dk.sdu.mmmi.msd.leafletDSL.Assignment
+import dk.sdu.mmmi.msd.leafletDSL.CONTAINS
+import dk.sdu.mmmi.msd.leafletDSL.SetComparisonOperator
+import dk.sdu.mmmi.msd.leafletDSL.SetTypes
+import dk.sdu.mmmi.msd.leafletDSL.AllSetTypes
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -110,6 +117,9 @@ import dk.sdu.mmmi.msd.leafletDSL.MULTIPOLYGON
     @Property
     var Set<Transform> transforms = new HashSet();
 
+    @Property
+    var Set<Assignment> assignments = new HashSet();
+
  	@Property
     var Set<Layer> layers = new HashSet();
 
@@ -123,7 +133,7 @@ import dk.sdu.mmmi.msd.leafletDSL.MULTIPOLYGON
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
-class DomainmodelGenerator extends AbstractGenerator {
+class LeafletDSLGenerator extends AbstractGenerator {
 	var state = new State(0);
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val model = resource.allContents.filter(typeof(Model)).next
@@ -253,8 +263,8 @@ class DomainmodelGenerator extends AbstractGenerator {
 		//DO NOTHING
 	}
 
-	def dispatch CharSequence findSubExpression(Comparison expression)
-	'''«expression.left.findSubExpression»«expression.oparator.findSubExpression»«expression.right.findSubExpression»'''
+	def dispatch CharSequence findSubExpression(LogicComparison expression)
+	'''«expression.left.findSubExpression»«expression.operator.findSubExpression»«expression.right.findSubExpression»'''
 	def dispatch CharSequence findSubExpression(LESS less)''' < '''
 	def dispatch CharSequence findSubExpression(MORE less)''' > '''
 	def dispatch CharSequence findSubExpression(EQ less)''' == '''
@@ -262,10 +272,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch CharSequence findSubExpression(EQMORE less)''' >= '''
 	def dispatch CharSequence findSubExpression(NOT less)''' != '''
 
-	def dispatch CharSequence  findSubExpression(Disjunction expression)
+	def dispatch CharSequence findSubExpression(SetComparison expression) {
+		'''(«generateSetComparison(expression.left, expression.operator, expression.right)»)'''
+	}
+
+	def dispatch CharSequence findSubExpression(Disjunction expression)
 	'''(«expression.left.findSubExpression» && «expression.right.findSubExpression»)'''
 
-	def dispatch CharSequence  findSubExpression(Conjunction expression)
+	def dispatch CharSequence findSubExpression(Conjunction expression)
 	'''(«expression.left.findSubExpression» || «expression.right.findSubExpression»)'''
 
 	def dispatch CharSequence findSubExpression(AllTypes type)
@@ -289,6 +303,40 @@ class DomainmodelGenerator extends AbstractGenerator {
 
 	def dispatch CharSequence findSubExpression(Transform exp)
 	'''transform«exp.name»(feature.properties.«exp.variable»)'''
+
+
+	def generateSetComparison(String variableId, SetComparisonOperator setComparisonOp, SetTypes setTypes) {
+		switch setComparisonOp {
+			CONTAINS : return generateSetContains(setTypes, variableId)
+		}
+	}
+
+	def generateSetContains(SetTypes setTypes, String variableId) {
+		if(setTypes.set !== null) {
+			return generateSetContainsDirect(setTypes.set, variableId)
+		}
+		else if(setTypes.id !== null) {
+			return generateSetContainsDirect(setTypes.set, variableId)
+		}
+	}
+
+	def generateSetContainsDirect(dk.sdu.mmmi.msd.leafletDSL.Set set, String variableId)
+	'''containedWithinSet(«set.generateSet», feature.properties.«variableId»)'''
+
+	def generateSetContainsIndirect(String setVariable, String variableId)
+	'''containedWithinSet(«setVariable», feature.properties.«variableId»)'''
+
+	def generateSet(dk.sdu.mmmi.msd.leafletDSL.Set set)
+	'''[«FOR item : set.items SEPARATOR ','» «item.generateSetItem»«ENDFOR» ]'''
+
+	def dispatch CharSequence generateSetItem(AllSetTypes type)
+	'''«IF (type.s !== null)»"«type.s»"«ENDIF»'''
+
+	def dispatch CharSequence generateSetItem(BOOLEAN bool)
+	'''«printBOOLEAN(bool)»'''
+
+	def dispatch CharSequence generateSetItem(NumberTypes num)
+	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
 
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
@@ -314,6 +362,11 @@ class DomainmodelGenerator extends AbstractGenerator {
 		con.right.findVariable(variabels);
 	}
 
+
+	def dispatch void findVariable(SetComparison con, Set<String> variabels){
+		// TODO: Do something here.
+	}
+
 	def dispatch void findVariable(LogicExp le, Set<String> variabels){
 		le.left.findVariable(variabels);
 		le.right.findVariable(variabels);
@@ -334,7 +387,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 		}
 	}
 
-	def dispatch void findVariable(Comparison con, Set<String> variabels){
+	def dispatch void findVariable(LogicComparison con, Set<String> variabels){
 		con.left.findVariable(variabels);
 		con.right.findVariable(variabels);
 	}
@@ -527,6 +580,41 @@ class DomainmodelGenerator extends AbstractGenerator {
 		    </div>
 		</body>
 		<script>
+
+
+			function subtractSets(set1, set2) {
+					newSet = [];
+					for (var i = 0; i < set1.length; i++) {
+							index = $.inArray(set1[i], set2);
+							if(index == -1) {
+									newSet.push(set1[i]);
+							}
+					}
+					return newSet;
+			}
+
+			function intersectSets(set1, set2) {
+					newSet = [];
+					for (var i = 0; i < set1.length; i++) {
+							for (var j = 0; j < set2.length; i++) {
+									index = $.inArray(set1[i], set2);
+									index2 = $.inArray(set2[j], set1);
+									if(index != -1 && index2 != -1) {
+											newSet.push(set1[i]);
+									}
+							}
+					}
+					return newSet;
+			}
+
+			function unionSets(set1, set2) {
+					return $.merge(set1, set2);
+			}
+
+			function containedWithinSet(set, value) {
+					return $.inArray(value, set) != -1;
+			}
+
 		    function loadJSON(url, callback) {
             var xobj = new XMLHttpRequest();
             xobj.overrideMimeType("application/javascipt");

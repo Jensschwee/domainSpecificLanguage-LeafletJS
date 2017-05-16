@@ -288,7 +288,7 @@ class DomainmodelGenerator extends AbstractGenerator {
 	'''(«expression.left.findSubExpression(layer)» || «expression.right.findSubExpression(layer)»)'''
 	
 	def dispatch CharSequence findSubExpression(org.example.domainmodel.domainmodel.String str, Layer layer)
-	'''«(str.string !== null)»"«str.string»"'''
+	'''"«str.string»"'''
 	
 	def dispatch CharSequence findSubExpression(Id id, Layer layer)
 	'''«var transform = state.transforms.findFirst[it.name==id.id]»«IF(transform !== null)»«transform.findSubExpression(layer)»«ELSE»feature.properties["«layer.datasource.variables.findFirst[it.vname == id.id].mapsto»"]«ENDIF»'''

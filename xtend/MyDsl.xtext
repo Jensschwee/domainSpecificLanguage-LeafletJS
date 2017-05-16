@@ -127,10 +127,10 @@ LogicTerm returns LogicExpression:
 ;
 
 Comparison:
-	left=AllTypes operator=LogicOparator right=AllTypes
+	left=AllTypes operator=LogicOperator right=AllTypes
 ;
 
-LogicOparator:
+LogicOperator:
 	{LESS} '<' | {MORE}'>' | {EQ}'=' | {EQLESS}'=<' | {EQMORE}'=>' | {EQLESS}'<=' | {EQMORE}'>=' | {NOT}'!=' | {NOT}'<>'| {NOT}'=!'
 ;
 

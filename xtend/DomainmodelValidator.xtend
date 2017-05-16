@@ -47,6 +47,8 @@ import org.example.domainmodel.domainmodel.BackgroundColor
 import org.example.domainmodel.domainmodel.BackgroundOpacity
 import org.example.domainmodel.domainmodel.PointerIcon
 import org.example.domainmodel.domainmodel.LineOpacity
+import org.example.domainmodel.domainmodel.Id
+import org.example.domainmodel.domainmodel.NumberTypes
 
 public enum DataTypes {
     BOOLIAN, STRING, NUMBER
@@ -119,6 +121,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 			le.right.findFilterVariables(variabels);
 	}
 	
+	/*
 	def dispatch void findFilterVariables(AllTypes at, Set<String> variabels){
 		if(!at.id.isNullOrEmpty())
 		{
@@ -132,6 +135,22 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 				transform.findTransformVariables(variabels);
 			}
 		}
+	} */
+	
+	def dispatch void findFilterVariables(Id id, Set<String> variabels){
+		var transform = state.transforms.findFirst[it.name==id.id]
+		if(transform === null)
+		{
+			variabels.add(id.id);
+		}
+		else
+		{
+			transform.findTransformVariables(variabels);
+		}
+	}
+	
+	def dispatch void findFilterVariables(AllTypes type, Set<String> variabels){
+		//DO NOTHING
 	}
 	
 	def findTransformVariables(Transform transform, Set<String> variabels)
@@ -344,6 +363,21 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		return DataTypes.BOOLIAN;
 	}
 	
+	def dispatch DataTypes checkDatatypeFilterExp(Id id,EList<DataSourceVariable> variables, int expressionIndex){
+		var transform = state.transforms.findFirst[it.name==id.id]
+			if(transform !== null)
+			{
+				return transform.checkDatatypeFilterExp(variables, expressionIndex);
+			}
+			else
+			{
+				var type = variables.findFirst[it.vname == id.id].type;
+				if(type !== null)
+					return type.checkDatatypeFilterExp(variables, expressionIndex);
+			}
+	}
+	
+	/*
 	def dispatch DataTypes checkDatatypeFilterExp(AllTypes datatype,EList<DataSourceVariable> variables, int expressionIndex) {
 		if(!datatype.id.isNullOrEmpty)
 		{
@@ -363,7 +397,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 		{
 			return DataTypes.STRING;
 		}
-	}
+	} */
 		
 	def dispatch DataTypes checkDatatypeFilterExp(Transform transform,EList<DataSourceVariable> variables, int expressionIndex) {
 		var datatype = variables.findFirst[it.vname == transform.variable].type.checkDatatypeFilterExp(variables, expressionIndex);
@@ -393,7 +427,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	{
 		if(!type1.equals(type2))
 		{
-			warning("These date types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
+			warning("These data types are not the same and will always be false", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
 			return false;
 		}
 		return true;
@@ -474,7 +508,7 @@ class DomainmodelValidator extends AbstractDomainmodelValidator {
 	def dispatch checkDatatypes(NOT not, DataTypes type1, DataTypes type2, int expressionIndex)
 	{
 		if(!type1.equals(type2))
-			info("These date types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
+			info("These data types are not the same and will always be true, in the not case", DomainmodelPackage$Literals::FILTER__FILTER_ELEMENTS,expressionIndex);		 	 
 	}
 	
 	def stringErrorMsg(String type, int expressionIndex)

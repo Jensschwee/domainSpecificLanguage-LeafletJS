@@ -79,7 +79,11 @@ Filter:
 ;
 
 FilterTypes:
-	{FilterStyle} 'styling'  style=[Styling] |   {FilterMapType} 'type' mapType=MapType | 'where' Disjunction
+	FilterTypesDatasource |   {FilterMapType} 'type' mapType=MapType 
+;
+
+FilterTypesDatasource:
+	{FilterStyle} 'styling'  style=[Styling] | 'where' Disjunction
 ;
 
 MapType:
@@ -233,7 +237,7 @@ Attribution:
 ;
 
 AllTypes:
-	NumberTypes |string=STRING | BOOLEAN | id=ID
+	NumberTypes |{String} string=STRING | BOOLEAN |{Id} id=ID
 ;
 
 NumberTypes:

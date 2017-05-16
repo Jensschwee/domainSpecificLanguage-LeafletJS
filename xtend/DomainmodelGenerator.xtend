@@ -101,6 +101,8 @@ import org.example.domainmodel.domainmodel.impl.LineColorImpl
 import org.example.domainmodel.domainmodel.FilterStyle
 import org.example.domainmodel.domainmodel.FilterMapType
 import org.example.domainmodel.domainmodel.FilterTypes
+import org.example.domainmodel.domainmodel.FilterTypesDatasource
+import org.example.domainmodel.domainmodel.Id
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -285,8 +287,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 	def dispatch CharSequence  findSubExpression(Conjunction expression, Layer layer)
 	'''(«expression.left.findSubExpression(layer)» || «expression.right.findSubExpression(layer)»)'''
 	
-	def dispatch CharSequence findSubExpression(AllTypes type, Layer layer)
-	'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression(layer)»«ELSE»feature.properties["«layer.datasource.variables.findFirst[it.vname == type.id].mapsto»"]«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
+	def dispatch CharSequence findSubExpression(org.example.domainmodel.domainmodel.String str, Layer layer)
+	'''«(str.string !== null)»"«str.string»"'''
+	
+	def dispatch CharSequence findSubExpression(Id id, Layer layer)
+	'''«var transform = state.transforms.findFirst[it.name==id.id]»«IF(transform !== null)»«transform.findSubExpression(layer)»«ELSE»feature.properties["«layer.datasource.variables.findFirst[it.vname == id.id].mapsto»"]«ENDIF»'''
+	
+	//def dispatch CharSequence findSubExpression(AllTypes type, Layer layer)
+	//'''«IF(type.id !== null)»«var transform = state.transforms.findFirst[it.name==type.id]»«IF(transform !== null)»«transform.findSubExpression(layer)»«ELSE»feature.properties["«layer.datasource.variables.findFirst[it.vname == type.id].mapsto»"]«ENDIF»«ELSEIF (type.string !== null)»"«type.string»"«ENDIF»'''
 	
 	def dispatch CharSequence findSubExpression(BOOLEAN bool, Layer layer)'''«printBOOLEAN(bool)»'''
 	
@@ -338,19 +346,25 @@ class DomainmodelGenerator extends AbstractGenerator {
 		le.right.findVariable(variabels,datasourceVariables);
 	}
 	
+	
 	def dispatch void findVariable(AllTypes at, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
-		if(at.id !== null)
+		//DO NOTHING
+	} 
+	
+	/*def dispatch void findVariable(org.example.domainmodel.domainmodel.String str, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
+		//DO NOTHING
+	}*/
+	
+	def dispatch void findVariable(Id id, Set<String> variabels, List<DataSourceVariable> datasourceVariables){
+		var transform = state.transforms.findFirst[it.name==id.id]
+		if(transform === null)
 		{
-			var transform = state.transforms.findFirst[it.name==at.id]
-			if(transform === null)
-			{
-				var variable = datasourceVariables.findFirst[it.vname == at.id]
-				variabels.add(variable.mapsto);
-			}
-			else
-			{
-				transform.findTransformVariables(variabels, datasourceVariables);
-			}
+			var variable = datasourceVariables.findFirst[it.vname == id.id]
+			variabels.add(variable.mapsto);
+		}
+		else
+		{
+			transform.findTransformVariables(variabels, datasourceVariables);
 		}
 	}
 	
@@ -466,14 +480,14 @@ class DomainmodelGenerator extends AbstractGenerator {
 			«dataSoruce.name» = JSON.parse(data);
             «FOR l : layers»
 				«IF l.filter.size() !== 0»
-						layer«l.name» = L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter[it instanceof LogicExpression || it instanceof FilterStyle] SEPARATOR ","»«FE.generateFilterElements(l,1)»«ENDFOR» «l.filter.get(0).generateCustumPointIcon»});
+						layer«l.name» = L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter(FilterTypesDatasource) SEPARATOR ","»«FE.generateFilterElements(l,1)»«ENDFOR» «l.filter.get(0).generateCustumPointIcon»});
             	«ELSE»
 						layer«l.name» = L.geoJson(«l.datasource.name»);
             	«ENDIF»
             	«state.counter = 0»
 	            	«FOR filter : l.filter»
 		            	«IF state.counter != 0»
-		            	L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter[it instanceof LogicExpression || it instanceof FilterStyle] SEPARATOR "," »«FE.generateFilterElements(l,state.counter+1)»«ENDFOR» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);;
+		            	L.geoJson(«l.datasource.name», { «FOR FE : l.filter.get(0).filterElements.filter(FilterTypesDatasource) SEPARATOR "," »«FE.generateFilterElements(l,state.counter+1)»«ENDFOR» «filter.generateCustumPointIcon»}).addTo(layer«l.name»);;
 		            	«ENDIF»
 		            	«state.setCounter(state.counter + 1)»
 	            	«ENDFOR»

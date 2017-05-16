@@ -30,6 +30,10 @@ import dk.sdu.mmmi.msd.leafletDSL.LeafletDSLPackage
 import dk.sdu.mmmi.msd.leafletDSL.LogicComparison
 import dk.sdu.mmmi.msd.leafletDSL.SetComparison
 import dk.sdu.mmmi.msd.leafletDSL.SetTypes
+import dk.sdu.mmmi.msd.leafletDSL.AllSetTypes
+import dk.sdu.mmmi.msd.leafletDSL.NumberTypes
+import org.eclipse.emf.ecore.EObject
+import dk.sdu.mmmi.msd.leafletDSL.Assignment
 
 /**
  * This class contains custom validation rules.
@@ -41,6 +45,8 @@ class StateClass {
     var Set<Transform> transforms = new HashSet();
      @Property
     var Set<DataSource> datasources = new HashSet();
+     @Property
+    var Set<Assignment> assignments = new HashSet();
 }
 
 /**
@@ -143,10 +149,11 @@ class LeafletDSLValidator extends AbstractLeafletDSLValidator {
 	}
 
 	def dispatch void findFilterVariables(SetTypes st, Set<String> variabels) {
-		// TODO: Do something here, or ignore?
+		// Ignore
 	}
 
 	def dispatch void findFilterVariables(Comparison con, Set<String> variabels) {
+		// Ignore
 	}
 
 	@Check
@@ -205,6 +212,75 @@ class LeafletDSLValidator extends AbstractLeafletDSLValidator {
 	@Check
 	def addDataSourceToList(DataSource datasource) {
 		state.datasources.add(datasource);
+	}
+
+	@Check
+	def ensureSetSingleType(dk.sdu.mmmi.msd.leafletDSL.Set set) {
+		var firstItemType = "";
+		var index = 0
+		for(AllSetTypes setitem : set.items) {
+			if(firstItemType === "") {
+				if(setitem.s !== null) {
+					firstItemType = "string"
+				}
+				else if(setitem instanceof NumberTypes) {
+					firstItemType = "number"
+				}
+			}
+
+			if(firstItemType === "string" && setitem.s === null) {
+				error("Expected 'string', all items within a set must of be the same type.", LeafletDSLPackage$Literals::SET__ITEMS, index);
+			}
+			else if(firstItemType === "number" && !(setitem instanceof NumberTypes)) {
+				error("Expected 'number', all items within a set must be of the same type.", LeafletDSLPackage$Literals::SET__ITEMS, index);
+			}
+			index++
+		}
+	}
+
+	@Check
+	def ensureSetComparisonVariablePresence(SetComparison setComp) {
+		var DataSource dataSource = findLayerDataSource(setComp)
+		for(DataSourceVariable variable : dataSource.variables) {
+			if(variable.vname.equals(setComp.left)) {
+				return;
+			}
+		}
+		error("Expected '" + setComp.left + "' to be present as a variable within the datasource named '" + dataSource.name + "'", LeafletDSLPackage$Literals::SET_COMPARISON__LEFT);
+	}
+
+
+	def dispatch DataSource findLayerDataSource(SetComparison setComp) {
+		return setComp.eContainer().findLayerDataSource as DataSource
+	}
+
+	def dispatch DataSource findLayerDataSource(EObject object) {
+		if(object instanceof Layer) {
+			var Layer layer = object as Layer
+			if(layer.datasource !== null) {
+				return layer.datasource
+			}
+		}
+		return object.eContainer().findLayerDataSource
+	}
+
+	@Check
+	def addVariableAssignments(Assignment ass) {
+		state.assignments.add(ass)
+	}
+
+	@Check
+	def ensureReferencedAssignedSetPresence(SetTypes setTypes) {
+		if(setTypes.id === null) {
+			return
+		}
+
+		for(Assignment ass : state.assignments) {
+			if(ass.name.equals(setTypes.id) && ass.exp instanceof dk.sdu.mmmi.msd.leafletDSL.Set) {
+				return;
+			}
+		}
+		error("Identifier '" + setTypes.id + "' is not assigned a set.", LeafletDSLPackage$Literals::SET_TYPES__ID);
 	}
 
 }

@@ -107,7 +107,8 @@ import dk.sdu.mmmi.msd.leafletDSL.SetExpression
 import dk.sdu.mmmi.msd.leafletDSL.SetExp
 import dk.sdu.mmmi.msd.leafletDSL.UNION
 import dk.sdu.mmmi.msd.leafletDSL.INTERSECT
-import dk.sdu.mmmi.msd.leafletDSL.DIFF
+import dk.sdu.mmmi.msd.leafletDSL.COMPLEMENT
+import dk.sdu.mmmi.msd.leafletDSL.UNIVERSE
 
 /**
   * http://stackoverflow.com/questions/18409011/xtend-how-to-stop-a-variable-from-printing-in-output
@@ -185,7 +186,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 
 	def dispatch generateModelItemMember(Assignment assignment)
 	'''
-	var assignment«assignment.name» = «assignment.exp.generateAssignment»;
+	var assign«assignment.name» = «assignment.exp.generateAssignment»;
 	'''
 
 	def dispatch generateAssignment(dk.sdu.mmmi.msd.leafletDSL.Set set)
@@ -288,9 +289,8 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	def dispatch CharSequence findSubExpression(EQMORE less)''' >= '''
 	def dispatch CharSequence findSubExpression(NOT less)''' != '''
 
-	def dispatch CharSequence findSubExpression(SetComparison expression) {
-		'''(«expression.generateSetExpression»)'''
-	}
+	def dispatch CharSequence findSubExpression(SetComparison expression)
+	'''(«expression.generateSetComparison»)'''
 
 	def dispatch CharSequence findSubExpression(Disjunction expression)
 	'''(«expression.left.findSubExpression» && «expression.right.findSubExpression»)'''
@@ -318,31 +318,47 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	}
 
 	def dispatch CharSequence findSubExpression(Transform exp)
-	'''transform«exp.name»(feature.properties.«exp.variable»)'''
+		'''transform«exp.name»(feature.properties.«exp.variable»)'''
 
 
-	def dispatch CharSequence generateSetExpression(SetComparison expression) {
-		switch expression.operator {
-			CONTAINS: return '''containedWithinSet(«expression.right.generateSetExpression», feature.properties.«expression.left»)'''
-			default: return ''' '''
+	def dispatch CharSequence generateSetComparison(SetComparison expression)
+	'''«expression.operator.generateSetComparison»(«expression.right.generateSetExpression», feature.properties.«expression.left»)'''
+
+	def dispatch CharSequence generateSetComparison(CONTAINS op)
+	'''containedWithinSet'''
+
+	def dispatch CharSequence generateSetExpression(SetExpression expression)
+	'''«expression.op.generateSetExpression»(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
+
+	def dispatch CharSequence generateSetExpression(UNION op)
+	'''unionSets'''
+
+	def dispatch CharSequence generateSetExpression(INTERSECT op)
+	'''intersectSets'''
+
+	def dispatch CharSequence generateSetExpression(COMPLEMENT op)
+	'''complementSets'''
+
+	def dispatch CharSequence generateSetExpression(UNIVERSE universe) {
+		var DataSource dataSource = universe.findSetUniverseDataSource
+		var SetComparison comparison = universe.findSetUniverseComparisonProperty
+
+		if(dataSource !== null && comparison !== null) {
+			if(dataSource.name !== null && comparison.left !== null) {
+				return '''generateUniverseSet(«dataSource.name», "«comparison.left»")'''
+			}
 		}
+
+		return '''[]'''
 	}
 
-	def dispatch CharSequence generateSetExpression(SetExpression expression) {
-		switch expression.op {
-			UNION: return '''unionSets(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
-			INTERSECT: return '''intersectSets(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
-			DIFF: return '''subtractSets(«expression.left.generateSetExpression», «expression.right.generateSetExpression»)'''
-			default: return ''' '''
-		}
-	}
 
 	def dispatch CharSequence generateSetExpression(SetTypes expression) {
 		if(expression.set !== null) {
 			return expression.set.generateSet
 		}
 		else if(expression.id !== null) {
-			return "assignment" + expression.id
+			return "assign" + expression.id
 		}
 	}
 
@@ -352,11 +368,36 @@ class LeafletDSLGenerator extends AbstractGenerator {
 	def dispatch CharSequence generateSetItem(AllSetTypes type)
 	'''«IF (type.s !== null)»"«type.s»"«ENDIF»'''
 
-	def dispatch CharSequence generateSetItem(BOOLEAN bool)
-	'''«printBOOLEAN(bool)»'''
-
 	def dispatch CharSequence generateSetItem(NumberTypes num)
 	'''«IF(num.int !== null)»«printINTEGER(num.int)»«ELSEIF(num.double !== null)»«printDOUBLE(num.double)»«ENDIF»'''
+
+
+	def dispatch DataSource findSetUniverseDataSource(UNIVERSE universe) {
+		return universe.eContainer().findSetUniverseDataSource as DataSource
+	}
+
+	def dispatch DataSource findSetUniverseDataSource(EObject object) {
+		if(object instanceof Layer) {
+			var Layer layer = object as Layer
+			if(layer.datasource !== null) {
+				return layer.datasource
+			}
+		}
+		return object.eContainer().findSetUniverseDataSource
+	}
+
+	def dispatch SetComparison findSetUniverseComparisonProperty(UNIVERSE universe) {
+		return universe.eContainer().findSetUniverseComparisonProperty
+	}
+
+	def dispatch SetComparison findSetUniverseComparisonProperty(EObject object) {
+		if(object instanceof SetComparison) {
+			return object as SetComparison
+		}
+		return object.eContainer().findSetUniverseComparisonProperty
+	}
+
+
 
 	def dispatch getMaptypeGenerate(POINT type)'''Point'''
 	def dispatch getMaptypeGenerate(POLYGON type)'''Polygon'''
@@ -603,8 +644,26 @@ class LeafletDSLGenerator extends AbstractGenerator {
 		</body>
 		<script>
 
+			function generateUniverseSet(dataObject, propertyName) {
+						universeSet = [];
 
-			function subtractSets(set1, set2) {
+						// GeoJSON FeatureCollection
+						if(dataObject.type !== undefined && dataObject.type === "FeatureCollection") {
+								for (var i = 0; i < dataObject.features.length; i++) {
+										feature = dataObject.features[i];
+										if(feature.type !== undefined && feature.type === "Feature") {
+												if(feature.properties !== undefined && feature.properties[propertyName] !== undefined) {
+														universeSet.push(feature.properties[propertyName]);
+												}
+										}
+								}
+						}
+
+						// Note: Write more of these if additional types of datasources are added.
+						return universeSet;
+				}
+
+			function complementSets(set1, set2) {
 					newSet = [];
 					for (var i = 0; i < set1.length; i++) {
 							index = $.inArray(set1[i], set2);
@@ -618,7 +677,7 @@ class LeafletDSLGenerator extends AbstractGenerator {
 			function intersectSets(set1, set2) {
 					newSet = [];
 					for (var i = 0; i < set1.length; i++) {
-							for (var j = 0; j < set2.length; i++) {
+							for (var j = 0; j < set2.length; j++) {
 									index = $.inArray(set1[i], set2);
 									index2 = $.inArray(set2[j], set1);
 									if(index != -1 && index2 != -1) {

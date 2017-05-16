@@ -47,6 +47,26 @@
 		zoomControl :  true
 	}).setView([38.800425, -77.7], 12);
 
+
+	function generateUniverseSet(dataObject, propertyName) {
+			universeSet = [];
+
+			// GeoJSON FeatureCollection
+			if(dataObject.type !== undefined && dataObject.type === "FeatureCollection") {
+					for (var i = 0; i < dataObject.features.length; i++) {
+							feature = dataObject.features[i];
+							if(feature.type !== undefined && feature.type === "Feature") {
+									if(feature.properties !== undefined && feature.properties[propertyName] !== undefined) {
+											universeSet.push(feature.properties[propertyName]);
+									}
+							}
+					}
+			}
+
+			// Note: Write more of these if additional types of datasources are added.
+			return universeSet;
+	}
+
 	function subtractSets(set1, set2) {
 			newSet = [];
 			for (var i = 0; i < set1.length; i++) {

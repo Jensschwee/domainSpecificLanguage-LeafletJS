@@ -5,16 +5,18 @@ include script "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min
 
 map worldmap startZoom 4 minZoom 1 maxZoom 19 maxNativeZoom 22 disableZoomBtn true lat 38.800425 long -77.07 "http://korona.geog.uni-heidelberg.de/tiles/roads/x={x}&y={y}&z={z}"
 
-source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson" {
-	variable mag
-	variable tsunami
-	variable magType
-	variable cdi
-	variable alert
-	variable status
-	variable sig
-	variable net
-	variable time
+var NiceEqNumbers := [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+
+source geojson Earthquakes "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson" {
+	var mag
+	var tsunami
+	var magType
+	var cdi
+	var alert
+	var status
+	var sig
+	var net
+	var time
 }
 
 transform dataYear time where value / (31556926 * 1000) + 1970
@@ -22,6 +24,10 @@ transform dataYear time where value / (31556926 * 1000) + 1970
 layer BigEQ from Earthquakes {
 	filter BigEqStyle where mag > 5.0 and (magType = "mb_lg" or magType = "ml")
 	filter EQStyle where mag > 5.0 and magType = "mwr" and (sig > 100 or cdi != 2.0)
+}
+
+layer PointZeroMag from Earthquakes {
+	filter EQStyle where mag contains NiceEqNumbers
 }
 
 layer Tsunamis from Earthquakes {
@@ -32,11 +38,11 @@ layer ThisYear from Earthquakes {
 	filter EQStyle where dataYear > 2016 and dataYear < 2018
 }
 
-style TsunamiStyle{
+style TsunamiStyle {
 	pointerIcon iconTsunami
 }
 
-style BigEqStyle: EQStyle{
+style BigEqStyle: EQStyle {
 	pointerIcon iconBigEQ
 }
 
@@ -51,3 +57,4 @@ icon iconAll size 20 source "https://cdn3.iconfinder.com/data/icons/earthquake/5
 button toggles BigEQ iconBigEQ location bottomRight
 button toggles Tsunamis iconTsunami location bottomRight
 button toggles ThisYear iconAll location bottomRight
+button toggles PointZeroMag iconAll location bottomRight
